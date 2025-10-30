@@ -1,0 +1,67 @@
+{
+  "name": "cofb-backend",
+  "version": "1.0.0",
+  "description": "Foodbank Check-In and Appointment System - Backend API",
+  "main": "dist/server.js",
+  "scripts": {
+    "start": "node dist/server.js",
+    "dev": "nodemon src/server.ts",
+    "build": "echo 'Starting TypeScript compilation...' && tsc && echo 'TypeScript compilation completed successfully'",
+    "lint": "eslint src/**/*.ts",
+    "lint:fix": "eslint src/**/*.ts --fix",
+    "type-check": "tsc --noEmit",
+    "clean": "rimraf dist",
+    "prebuild": "npm run clean",
+    "postinstall": "npm run build",
+    "start:prod": "NODE_ENV=production node dist/server.js",
+    "smoke": "node -e \"(async()=>{const r=await fetch(process.env.SMOKE_URL||'http://localhost:3001/api/health');console.log('SMOKE',r.status, await r.text())})()\""
+  },
+  "keywords": [
+    "food-bank",
+    "api",
+    "typescript",
+    "express",
+    "nodejs"
+  ],
+  "author": "Lindsey D. Stead / Lifesaver Technology Services",
+  "license": "UNLICENSED",
+  "type": "commonjs",
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.0",
+    "axios": "^1.11.0",
+    "cors": "^2.8.5",
+    "csv-parse": "^5.5.3",
+    "dayjs": "^1.11.18",
+    "dotenv": "^17.2.0",
+    "express": "^5.1.0",
+    "express-rate-limit": "^8.1.0",
+    "form-data": "^4.0.4",
+    "helmet": "^8.0.0",
+    "iconv-lite": "^0.7.0",
+    "multer": "^2.0.2",
+    "node-fetch": "^3.3.2",
+    "winston": "^3.11.0",
+    "winston-daily-rotate-file": "^4.7.1",
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/express": "^5.0.3",
+    "@types/multer": "^1.4.11",
+    "@types/node": "^24.1.0",
+    "@typescript-eslint/eslint-plugin": "^6.10.0",
+    "@typescript-eslint/parser": "^6.10.0",
+    "eslint": "^8.53.0",
+    "eslint-config-prettier": "^9.0.0",
+    "eslint-plugin-import": "^2.29.0",
+    "eslint-plugin-node": "^11.1.0",
+    "nodemon": "^3.1.10",
+    "rimraf": "^6.0.1",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.3"
+  }
+}
