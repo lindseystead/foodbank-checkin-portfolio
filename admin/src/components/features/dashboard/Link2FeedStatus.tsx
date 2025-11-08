@@ -51,7 +51,6 @@ import {
   FiGlobe,
   FiKey,
   FiClock,
-  FiExternalLink,
   FiSettings,
   FiPlay,
   FiTrash2,
