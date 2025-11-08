@@ -61,6 +61,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { formatToVancouverTime, formatToVancouverTimeOnly } from '../utils/timeFormatter';
 import { formatPhoneNumber } from '../common/utils/phoneFormatter';
 import { getApiUrl } from '../common/apiConfig';
+import { api } from '../lib/api';
 import { printTicket } from '../utils/printTicket';
 import { getStatusColorHex } from '../common/utils/statusColors';
 
@@ -142,7 +143,8 @@ const CheckInsPage: React.FC = () => {
       setError(null);
       
       // Use appointments endpoint to ensure CSV-sourced records are included
-      const response = await fetch(getApiUrl('/checkin/appointments'));
+      // IMPORTANT: Use api() helper to include authentication headers
+      const response = await api('/checkin/appointments');
       const data = await response.json();
 
       if (data.success && Array.isArray(data.data)) {
@@ -324,7 +326,8 @@ const CheckInsPage: React.FC = () => {
 
   const handleCancelAppointment = async (checkIn: CheckInRecord) => {
     try {
-      const response = await fetch(getApiUrl(`/checkin/${checkIn.id}/status`), {
+      // IMPORTANT: Use api() helper to include authentication headers
+      const response = await api(`/checkin/${checkIn.id}/status`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -371,7 +374,8 @@ const CheckInsPage: React.FC = () => {
       }
       
       // Use the new export-all endpoint that exports everyone with updates
-      const response = await fetch(getApiUrl('/csv/export-all'));
+      // IMPORTANT: Use api() helper to include authentication headers
+      const response = await api('/csv/export-all');
       
       if (response.ok) {
         const blob = await response.blob();

@@ -13,8 +13,8 @@
 
 **A complete full-stack production system for food bank operations, transforming client check-in workflow from paper-based to digital efficiency.**
 
-🌐 **Live Client Check-In**: [https://www.foodbank-checkin.ca/](https://www.foodbank-checkin.ca/)  
-📊 **Admin Dashboard**: [Live admin panel](https://www.foodbank-checkin.ca/admin)
+🌐 **Live Client Check-In**: [https://foodbank-checkin-tan.vercel.app/](https://foodbank-checkin-tan.vercel.app/)  
+📊 **Admin Dashboard**: [https://foodbank-checkin.vercel.app/login](https://foodbank-checkin.vercel.app/login)
 
 > **📝 Note**: This repository contains the **frontend applications only** (Client App + Admin Dashboard). The backend API is proprietary and not included in this repository. For backend licensing inquiries, contact lindsey@lifesavertech.ca
 
