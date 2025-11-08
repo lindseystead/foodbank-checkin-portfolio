@@ -35,6 +35,8 @@ Each frontend component has its own README with detailed setup instructions. See
 **Frontend Tech Stack:** React 18, TypeScript, Chakra UI, React Router, i18next, Vercel  
 **Backend Tech Stack:** Node.js, Express, TypeScript, Supabase, Railway (proprietary)
 
+**📄 Sample CSV File:** See [`docs/sample-appointments.csv`](docs/sample-appointments.csv) for an example CSV file format compatible with Link2Feed exports. All data is sanitized/anonymized for demonstration purposes.
+
 ---
 
 ## 🎮 Try It Out
@@ -42,8 +44,10 @@ Each frontend component has its own README with detailed setup instructions. See
 **Live Demo Available:**
 - **Client Check-In**: [https://www.foodbank-checkin.ca/](https://www.foodbank-checkin.ca/)
 - **Admin Dashboard**: [https://www.foodbank-checkin.ca/admin](https://www.foodbank-checkin.ca/admin)
-  - Test credentials available upon request for portfolio review
-  - Contact: lindsey@lifesavertech.ca
+  - **Test Admin Credentials for Supabase Authentication:**
+    - Email: `admin@example.com`
+    - Password: `testing123`
+  - Note: This is a test account for portfolio review and demonstration purposes
 
 **Code Review:**
 - Frontend code is available in this repository
