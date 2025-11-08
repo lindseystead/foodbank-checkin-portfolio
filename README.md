@@ -1,6 +1,6 @@
 # 🍎 Foodbank Check-In and Appointment System
 
-> **Originally designed as a capstone project at Thompson Rivers University (TRU), this system evolved into a production-ready application serving real food bank operations across Canada.**
+> **A complete full-stack system designed from the ground up as my Bachelor of Computing Sciences capstone project at Thompson Rivers University (TRU). Built solo using agile methodologies, this system helps food bank clients check in faster using QR codes and their own tablets or mobile devices.**
 
 🌐 **Live System**: [https://foodbank-checkin-tan.vercel.app/](https://foodbank-checkin-tan.vercel.app/) (Client Check-In) | [https://foodbank-checkin.vercel.app/login](https://foodbank-checkin.vercel.app/login) (Admin Dashboard)
 
@@ -9,12 +9,12 @@
 [![Vercel](https://img.shields.io/badge/Vercel-Hosted-000000?logo=vercel&logoColor=white)](https://vercel.com)
 [![License](https://img.shields.io/badge/License-Proprietary-red)](LICENSE)
 
-**A production-ready frontend system for food bank operations, transforming client check-in workflow from paper-based to digital efficiency.**
+**A complete full-stack system designed and built solo as a software engineering capstone project. The architecture is CSV-first and Link2Feed-ready, enabling food bank clients to check in faster using QR codes displayed at the food bank entrance, which they scan with their tablets or mobile devices.**
 
 🌐 **Live Client Check-In**: [https://foodbank-checkin-tan.vercel.app/](https://foodbank-checkin-tan.vercel.app/)  
 📊 **Admin Dashboard**: [https://foodbank-checkin.vercel.app/login](https://foodbank-checkin.vercel.app/login)
 
-> **📝 Portfolio Project**: This repository contains the **frontend applications** (Client App + Admin Dashboard) originally designed as a capstone project at Thompson Rivers University (TRU). The system evolved from academic research into a production-ready application serving real food bank operations. The backend API is not included in this repository.
+> **📝 Portfolio Project**: This repository contains the **frontend applications** (Client App + Admin Dashboard) from my capstone project. Designed and built entirely by me using agile methodologies, the system features a CSV-first architecture that works immediately with Link2Feed exports, with an API-ready design for future Link2Feed integration. The backend API is not included in this repository.
 
 ---
 
@@ -56,12 +56,14 @@ To test the complete check-in flow, you'll need:
 
 ## 🌟 What Makes This Special
 
-- ✨ **Real-World Impact**: Production-ready system designed for food bank operations
+- ✨ **Real-World Impact**: Production-ready system designed for food bank operations, currently deployed and serving real clients
+- 📱 **QR Code Workflow**: Clients scan QR codes displayed at food bank entrance using their tablets or mobile devices—no dedicated kiosk hardware needed
 - 🌍 **Multi-Language Support**: 7 languages (English, French, Spanish, Chinese, Hindi, Arabic, Punjabi)
-- 📱 **Mobile-First**: Works seamlessly on phones, tablets, and kiosks
+- 📊 **CSV-First Architecture**: Works immediately with Link2Feed CSV exports—no API access required
+- 🔗 **Link2Feed-Ready**: Architecture designed for future Link2Feed API integration
+- ⚡ **Fast Check-In**: Typically under 5 minutes (vs ~15 minutes with paper)
 - 🔒 **Privacy by Design**: All data auto-purges after 24 hours
 - 🏢 **Multi-Location**: Scalable architecture supporting multiple food bank locations
-- ⚡ **Fast Check-In**: Typically under 5 minutes (vs ~15 minutes with paper)
 - 🎨 **Accessible**: WCAG-compliant design for screen readers and keyboard navigation
 
 ---
@@ -104,9 +106,6 @@ To test the complete check-in flow, you'll need:
 *Link2Feed API configuration - admin can configure Link2Feed integration settings*
 
 #### Dashboard & Analytics
-![Admin Dashboard Analytics](assets/admin-dashboard-analytics.png)
-*Real-time analytics dashboard - live charts showing collected, pending, and not collected appointments*
-
 ![Admin Recent Check-Ins](assets/admin-recent-check-ins.png)
 *Recent check-ins feed - live feed of check-in activity with status badges and completion times*
 
@@ -146,31 +145,64 @@ To test the complete check-in flow, you'll need:
 
 ## 🏗️ System Architecture
 
-### Frontend Applications
+### CSV-First, Link2Feed-Ready Architecture
+
+This system was designed with a **CSV-first architecture** that enables immediate deployment with Link2Feed exports, while maintaining an **API-ready design** for future Link2Feed integration. The architecture supports both workflows seamlessly.
+
+**Architecture Overview:**
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                    CLIENT CHECK-IN APP                      │
-│  • Multilingual UI (7 languages)                           │
+│  • QR code scanning workflow                              │
+│  • Clients use their tablets/mobile devices               │
+│  • Multilingual UI (7 languages)                          │
 │  • Phone number + last name lookup                        │
 │  • Special dietary requests                               │
 │  • Instant next appointment generation                     │
-│  • Mobile-friendly kiosk access                           │
+│  • Mobile-friendly responsive design                       │
 └─────────────────────────────────────────────────────────────┘
                            ↕️
 ┌─────────────────────────────────────────────────────────────┐
 │                   ADMIN DASHBOARD                          │
 │  • Real-time check-in monitoring                          │
-│  • CSV upload from Link2Feed                             │
+│  • CSV upload from Link2Feed (CSV-first)                 │
+│  • Link2Feed API integration ready                        │
 │  • Client search and management                           │
 │  • Analytics and reporting                                │
 │  • Multi-location support                                │
 └─────────────────────────────────────────────────────────────┘
+                           ↕️
+┌─────────────────────────────────────────────────────────────┐
+│                   BACKEND API                              │
+│  • CSV-first processing (immediate deployment)            │
+│  • Link2Feed API-ready (future integration)              │
+│  • In-memory data store (24h auto-purge)                  │
+│  • Appointment scheduling (21-day cycle)                  │
+│  • Ticket number generation                               │
+└─────────────────────────────────────────────────────────────┘
 ```
+
+**Key Architectural Decisions:**
+- **CSV-First**: Works immediately with Link2Feed CSV exports—no API access required
+- **Link2Feed-Ready**: Architecture designed for future Link2Feed API integration
+- **Hybrid Approach**: Supports both CSV upload and API integration workflows
 
 ---
 
-## 🎯 Key Features
+## 🎯 Complete System Features
+
+### Client Check-In Workflow - QR Code Based
+
+**How It Works:**
+1. Food bank displays QR code at the front entrance
+2. Clients arriving for appointments scan the QR code with their tablet or mobile device
+3. QR code opens the check-in application directly in their browser
+4. Clients complete the 5-step check-in process on their own device
+5. Staff receive real-time updates on the admin dashboard
+6. System generates ticket for food distribution
+
+This approach eliminates the need for dedicated kiosk hardware and allows clients to use their own devices, making the system more accessible and cost-effective.
 
 ### For Clients - Complete Check-In Flow
 
@@ -205,41 +237,46 @@ To test the complete check-in flow, you'll need:
 - Success confirmation with auto-redirect after 10 seconds
 - Completion status
 
-### For Staff - Admin Dashboard Features
+### For Staff - Complete Admin Dashboard Features
 
 **Dashboard Page** - Main hub with 5 tabs:
-1. **Analytics** - Real-time charts showing: Collected (green), Pending (blue), Not Collected (orange)
-2. **Recent Check-Ins** - Live feed with completion time, status badges, filter by status
-3. **Find Clients** - Search all CSV clients by name, phone, ID
-4. **Clients List** - View all CSV upload data in table format
-5. **Help Requests** - Live table of client assistance requests with status management
+1. **Analytics** - Real-time charts showing: Collected (green), Pending (blue), Not Collected (orange), completion rates, and operational metrics
+2. **Recent Check-Ins** - Live feed with completion time, status badges, filter by status, real-time updates
+3. **Find Clients** - Search all CSV clients by name, phone, ID with instant results
+4. **Clients List** - View all CSV upload data in table format with sorting and filtering
+5. **Help Requests** - Live table of client assistance requests with status management and response tracking
 
 **All Check-Ins Page**:
 - Complete list of all check-in records
-- Search functionality
+- Advanced search functionality (name, phone, ID, date range)
 - Filter by status (Pending, Collected, Not Collected, etc.)
 - **Print tickets** directly from the list
 - View detailed check-in info
-- Real-time updates
+- Real-time updates with automatic refresh
+- Export capabilities
 
 **Client Detail Page**:
-- Full client profile view
-- Edit all client fields
+- Full client profile view with all appointment details
+- Edit all client fields (name, phone, appointment time, household size)
 - Print ticket for specific client
-- View full check-in history
-- Special requests display
+- View full check-in history with timestamps
+- Special requests display and management
+- Appointment rebooking functionality
 
 **CSV Upload Page**:
-- Upload CSV from Link2Feed CSV export 
+- Upload CSV from Link2Feed CSV export (CSV-first architecture)
+- Automatic CSV parsing with intelligent column detection
 - View upload statistics (added vs duplicates)
 - Date mismatch warnings
 - Clear all data with confirmation
+- Supports multiple CSV formats and column variations
 
 **Settings Page**:
-- Link2Feed API configuration
-- System status
+- Link2Feed API configuration (for future API integration)
+- System status and health monitoring
 - Clear configuration button
 - Integration management
+- Data version tracking
 
 **Profile Page**:
 - Admin user information
@@ -326,7 +363,24 @@ foodbank-checkin/
 
 ## 🎓 Academic Context: Capstone Project
 
-This system was **originally designed and developed** as Lindsey D. Stead's **Bachelor of Computing Sciences capstone project** at **Thompson Rivers University** under the software engineering supervision of **Dr. Kevin O'Neil**. What began as academic research evolved into a production-ready system serving real food bank operations. Special thanks to Dr. O'Neil for his guidance, mentorship, and support throughout the capstone project.
+This system was **designed and built entirely by me** as my **Bachelor of Computing Sciences capstone project** at **Thompson Rivers University** under the software engineering supervision of **Dr. Kevin O'Neil**. 
+
+**Solo Development:**
+- Designed from the ground up using agile methodologies
+- Full-stack implementation: React/TypeScript frontends, Node.js/Express backend
+- Complete system architecture and data management design
+- Security implementation and privacy compliance
+- Deployment and DevOps configuration
+- All development work completed independently
+
+**Agile Methodology:**
+- Iterative development with stakeholder feedback from food bank staff and volunteers
+- Requirements gathering, analysis, design, implementation, and testing phases
+- Continuous improvement based on real-world usage
+- Regular check-ins with supervisor Dr. Kevin O'Neil
+
+**From Capstone to Production:**
+What began as academic research evolved into a production-ready system serving real food bank operations. The system demonstrates the complete software engineering lifecycle from concept to deployment. Special thanks to Dr. O'Neil for his guidance, mentorship, and support throughout the capstone project.
 
 ### 🎓 Capstone Details
 - **Course**: COMP 4911 (Capstone Project)
@@ -342,10 +396,10 @@ This project represents Lindsey D. Stead's final capstone submission for Bachelo
 
 **Key Academic Components:**
 - **Analysis Report**: Requirements gathering, stakeholder analysis, needs assessment
-- **Design Report**: Architectural design, subsystem specifications, design rationale
+- **Design Report**: Architectural design (CSV-first, Link2Feed-ready), subsystem specifications, design rationale
 - **Final Report**: Complete implementation, testing, deployment documentation
-- **Agile Methodology**: Iterative development with stakeholder feedback
-- **Hybrid Architecture**: CSV-first with Link2Feed API-ready design pattern
+- **Agile Methodology**: Iterative development with stakeholder feedback, designed and implemented by me
+- **Hybrid Architecture**: CSV-first with Link2Feed API-ready design pattern—enables immediate deployment while supporting future API integration
 
 **What This Represents:**
 - **Academic Excellence**: Demonstrates mastery of software engineering principles
@@ -354,7 +408,7 @@ This project represents Lindsey D. Stead's final capstone submission for Bachelo
 - **Research to Reality**: Academic project evolved into deployed software
 - **Full Agile and Iterative Software Lifecycle**: From requirements gathering to production maintenance
 
-This project showcases the complete journey from academic research (COMP 4911 capstone project at TRU) to production deployment, demonstrating technical skills, problem-solving ability, and commitment to serving Canadian communities. Originally designed as a capstone project, the system is now designed specifically for Canadian food banks with PIPEDA compliance and Canadian data residency options.
+This project showcases the complete journey from academic research (COMP 4911 capstone project at TRU) to production deployment. Designed and built entirely by me using agile methodologies, the system demonstrates technical skills, problem-solving ability, and commitment to serving Canadian communities. The CSV-first, Link2Feed-ready architecture enables immediate deployment while supporting future API integration. Originally designed as a capstone project, the system is now designed specifically for Canadian food banks with PIPEDA compliance and Canadian data residency options.
 
 ---
 
@@ -394,8 +448,13 @@ This system was originally designed as a capstone project at Thompson Rivers Uni
 This project demonstrates **relevant qualifications** for a Software and Support Services Engineering role:
 
 ### ✨ Why This Project Stands Out
+- **Solo Development**: Designed and built entirely by me from the ground up as a capstone project
+- **Agile Methodology**: Used agile development practices throughout the project lifecycle
 - **Real Production System**: Deployed and serving real users daily
 - **Full Lifecycle Management**: From concept, system design and modeling, prototyping, to capstone to production
+- **CSV-First Architecture**: Enables immediate deployment with Link2Feed exports, no API access required
+- **Link2Feed-Ready**: Architecture designed for future API integration
+- **QR Code Workflow**: Innovative approach using QR codes and client devices—no dedicated hardware needed
 - **Stakeholder Management**: Worked directly with food bank staff and volunteers
 - **Problem-Solving**: Transformed paper-based chaos into digital efficiency
 - **Support-First Design**: Built with volunteers' limited technical skills in mind
