@@ -8,7 +8,7 @@
  * @author Lindsey D. Stead
  * @version 1.0.0
  * @since 2025-10-20
- * @license MIT
+ * @license Proprietary - see LICENSE file for details
  * 
  * @see {@link https://vitejs.dev/config/} Vite Configuration Documentation
  */
