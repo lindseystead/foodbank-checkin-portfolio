@@ -9,7 +9,7 @@
 [![Vercel](https://img.shields.io/badge/Vercel-Hosted-000000?logo=vercel&logoColor=white)](https://vercel.com)
 [![License](https://img.shields.io/badge/License-Proprietary-red)](LICENSE)
 
-**A complete full-stack system designed and built solo as a software engineering capstone project. The architecture is CSV-first and Link2Feed-ready, enabling food bank clients to check in faster using QR codes displayed at the food bank entrance, which they scan with their tablets or mobile devices.**
+**A complete full-stack system designed and built solo as a software engineering capstone project. Currently deployed and production-ready for food banks across Canada. The architecture is CSV-first and Link2Feed-ready, scalable, and can be easily adapted for other organizations who need a check-in system. Enables clients to check in faster using QR codes displayed at the entrance, which they scan with their tablets or mobile devices.**
 
 🌐 **Live Client Check-In**: [https://foodbank-checkin-tan.vercel.app/](https://foodbank-checkin-tan.vercel.app/)  
 📊 **Admin Dashboard**: [https://foodbank-checkin.vercel.app/login](https://foodbank-checkin.vercel.app/login)
@@ -56,14 +56,16 @@ To test the complete check-in flow, you'll need:
 
 ## 🌟 What Makes This Special
 
-- ✨ **Real-World Impact**: Production-ready system designed for food bank operations, currently deployed and serving real clients
-- 📱 **QR Code Workflow**: Clients scan QR codes displayed at food bank entrance using their tablets or mobile devices—no dedicated kiosk hardware needed
+- ✨ **Production-Ready & Deployed**: Currently deployed and serving real food banks across Canada—ready for immediate use
+- 🚀 **Scalable Architecture**: Built to handle multiple locations and high-volume check-ins simultaneously
+- 🔄 **Easily Adaptable**: Can be quickly adapted for other organizations who need a check-in system (appointments, events, services)
+- 📱 **QR Code Workflow**: Clients scan QR codes displayed at entrance using their tablets or mobile devices—no dedicated kiosk hardware needed
 - 🌍 **Multi-Language Support**: 7 languages (English, French, Spanish, Chinese, Hindi, Arabic, Punjabi)
-- 📊 **CSV-First Architecture**: Works immediately with Link2Feed CSV exports—no API access required
+- 📊 **CSV-First Architecture**: Works immediately with CSV exports—no API access required
 - 🔗 **Link2Feed-Ready**: Architecture designed for future Link2Feed API integration
 - ⚡ **Fast Check-In**: Typically under 5 minutes (vs ~15 minutes with paper)
 - 🔒 **Privacy by Design**: All data auto-purges after 24 hours
-- 🏢 **Multi-Location**: Scalable architecture supporting multiple food bank locations
+- 🏢 **Multi-Location Support**: Scalable architecture supporting multiple locations per organization
 - 🎨 **Accessible**: WCAG-compliant design for screen readers and keyboard navigation
 
 ---
@@ -773,6 +775,24 @@ cd client && npm test
 
 ---
 
+## 🔄 CI/CD & DevOps
+
+### Deployment Pipeline
+- **Frontend**: Automated deployment via Vercel
+- **Backend**: Railway deployment (proprietary, not included)
+- **Environment Management**: Separate dev and production environments
+- **Build Process**: TypeScript compilation + Vite build optimization
+- **Monitoring**: Vercel Analytics and Speed Insights for performance tracking
+
+### GitHub Actions Ready
+The project structure supports CI/CD integration:
+- Automated testing on pull requests
+- Build verification before deployment
+- Linting and type checking
+- Test coverage reporting
+
+---
+
 ## 🏢 Project Status
 
 **Portfolio Project**: Foodbank Check-In and Appointment System  
@@ -829,17 +849,30 @@ This project demonstrates **relevant qualifications** for a Software and Support
 
 ---
 
-## 🇨🇦 Canadian Food Bank Licensing
+## 🇨🇦 Canadian Food Bank Licensing & Adaptability
 
-This system is designed specifically for **Canadian food banks** and is available for licensing across Canada.
+This system is **currently deployed and production-ready** for **food banks across Canada** and is available for licensing. The system is also **easily adaptable** for other organizations who need a check-in system.
 
 ### Why This System for Canadian Food Banks?
 
+- **Currently Deployed**: Production-ready and operational across Canada
 - **PIPEDA Compliant**: Meets Canadian federal privacy law requirements
 - **Canadian Data Residency**: Can be deployed on Canadian servers (AWS ca-central-1, GCP northamerica-northeast1, Azure Canada Central)
 - **Multilingual Support**: 7 languages including French (Canada's official languages)
 - **Link2Feed Integration**: Works seamlessly with Link2Feed CSV exports used by Canadian food banks
 - **Real-World Proven**: Currently deployed and serving Canadian food bank operations
+- **Scalable**: Handles multiple locations and high-volume check-ins simultaneously
+
+### Adaptable for Other Organizations
+
+This system can be **easily adapted** for other organizations who need a check-in system:
+- **Healthcare Clinics**: Patient check-in and appointment management
+- **Event Management**: Event registration and check-in
+- **Service Organizations**: Client appointment scheduling and check-in
+- **Community Centers**: Program registration and attendance tracking
+- **Any Organization**: That needs QR code-based check-in with appointment scheduling
+
+The CSV-first architecture means organizations can start immediately with their existing data exports, and the system can be customized for specific organizational needs.
 
 ### Licensing Options for Canadian Organizations
 
