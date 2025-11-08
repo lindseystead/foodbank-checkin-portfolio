@@ -562,9 +562,83 @@ This approach eliminates the need for dedicated kiosk hardware and allows client
 - **Protected Routes**: Admin-only access control with session management
 - **Vercel Analytics**: Performance monitoring and insights
 
+### Backend (Proprietary - Not Included in Repository)
+> **Note**: The backend API is proprietary and not included in this repository. The following describes the backend architecture and features that power the frontend applications.
+
+**Backend Architecture:**
+- **Node.js/Express** RESTful API server
+- **TypeScript** for type-safe backend code
+- **In-Memory Data Store** with 24-hour auto-purge for privacy compliance
+- **CSV-First Processing**: Intelligent CSV parsing with automatic column detection
+- **Link2Feed API Integration Ready**: Architecture designed for future Link2Feed API integration
+- **Multi-Location Support**: Scalable architecture supporting multiple food bank locations
+
+**Backend Features & API Endpoints:**
+- **Check-In Management**:
+  - Client lookup and verification
+  - Check-in processing with status tracking
+  - Appointment scheduling (21-day cycle)
+  - Next appointment generation
+  - Status updates (Pending, Collected, Not Collected, etc.)
+- **CSV Processing**:
+  - Bulk CSV upload with validation
+  - Intelligent column detection (handles multiple CSV formats)
+  - Duplicate detection and prevention
+  - Date validation and mismatch warnings
+  - Export functionality with status updates
+- **Client Management**:
+  - Full CRUD operations for client data
+  - Client search and filtering
+  - Household information management
+  - Special requests storage and retrieval
+- **Appointment Management**:
+  - Appointment scheduling and rescheduling
+  - Time slot validation
+  - Appointment history tracking
+  - Late and missed appointment detection
+- **Help Request System**:
+  - Help request submission from client app
+  - Help request management and status tracking
+  - Admin response handling
+- **Ticket Generation**:
+  - Print ticket endpoint with QR code generation
+  - Ticket number assignment
+  - Ticket data formatting
+- **Data Management**:
+  - 24-hour auto-purge for privacy compliance
+  - Data expiry tracking
+  - Clear all data functionality
+  - Data version tracking
+- **Authentication & Security**:
+  - Supabase authentication integration
+  - Protected API routes with JWT validation
+  - CORS protection
+  - Input validation and sanitization
+  - Rate limiting and error handling
+
+**Why the Backend Architecture is Strong:**
+- **CSV-First Design**: Enables immediate deployment without API dependencies - food banks can start using the system right away with CSV exports
+- **Link2Feed-Ready**: Architecture designed from the ground up to support future Link2Feed API integration seamlessly
+- **Privacy by Design**: 24-hour auto-purge ensures no PII retention, meeting PIPEDA compliance requirements
+- **Scalable Architecture**: Multi-location support built-in, can handle multiple food bank locations simultaneously
+- **Type-Safe**: Full TypeScript implementation ensures reliability and maintainability
+- **RESTful Design**: Clean API design with consistent endpoints and error handling
+- **Real-Time Capable**: Polling-optimized endpoints support real-time dashboard updates
+- **Error Handling**: Comprehensive error handling with graceful degradation
+- **Performance**: In-memory data store provides fast response times for daily operations
+- **Data Integrity**: Duplicate detection, validation, and data consistency checks throughout
+
+**Backend Deployment:**
+- **Railway** for backend hosting (Node.js runtime)
+- **Environment-based configuration** for different deployment environments
+- **Health check endpoints** for monitoring
+- **Logging and error tracking** for production debugging
+
 ### Deployment
 - **Vercel** for frontend hosting (static assets via CDN)
+- **Railway** for backend API hosting (Node.js runtime)
 - **Custom domains** for professional branding
+- **Environment-based configuration** for production and development
 
 ---
 
@@ -617,10 +691,13 @@ foodbank-checkin/
 - **Smart Polling**: Only polls when tab is visible, not loading, and connection is healthy
 
 ### Engineering Skills Demonstrated
-✅ **Frontend Development**: React, TypeScript, modern UI frameworks  
+✅ **Full-Stack Development**: React/TypeScript frontends + Node.js/Express backend  
+✅ **Backend Architecture**: RESTful API design, data management, security implementation  
 ✅ **API Integration**: RESTful API consumption with error handling  
+✅ **Database Design**: In-memory data store with auto-purge, data integrity  
+✅ **Security**: Authentication, authorization, CORS, input validation, rate limiting  
 ✅ **UI/UX Design**: Accessible, responsive, multi-language support  
-✅ **DevOps**: Vercel deployment, environment management  
+✅ **DevOps**: Vercel + Railway deployment, environment management  
 ✅ **Testing**: Unit and E2E testing setup  
 ✅ **Documentation**: Technical specs, user guides, code comments  
 ✅ **Project Management**: From capstone to production deployment  
