@@ -57,23 +57,32 @@ const Confirmation: React.FC = () => {
     formattedDate: string;
   } | null>(null);
 
-  // Fetch next appointment data
-  const fetchNextAppointment = async (clientId: string) => {
+  /**
+   * Get next appointment for client
+   * 
+   * IMPORTANT: Uses checkInId endpoint for efficiency and reliability.
+   * This ensures we get the latest appointment data, including any admin changes.
+   * Falls back to session storage if API call fails.
+   */
+  const fetchNextAppointment = async (checkInId: string) => {
     try {
-      const response = await api('/checkin');
+      // Use checkInId endpoint - more efficient and always gets latest data
+      // This ensures admin changes are reflected immediately
+      const response = await api(`/checkin/${checkInId}`);
       const data = await response.json();
       
       if (data.success && data.data) {
-        // Find the client's record
-        const clientRecord = data.data.find((record: any) => 
-          record.clientId === clientId && 
-          record.nextAppointmentDate
-        );
+        const checkInRecord = data.data;
         
-        if (clientRecord) {
-          const nextDate = new Date(clientRecord.nextAppointmentDate);
+        // Use nextAppointmentISO (preferred) or nextAppointmentDate (fallback)
+        const appointmentDate = checkInRecord.nextAppointmentISO 
+          ? checkInRecord.nextAppointmentISO 
+          : checkInRecord.nextAppointmentDate;
+        
+        if (appointmentDate) {
+          const nextDate = new Date(appointmentDate);
           
-          // Convert 24-hour time to 12-hour AM/PM format
+          // Convert to 12-hour format
           const formatTime = (timeStr: string): string => {
             if (!timeStr) return '10:00 AM';
             
@@ -86,8 +95,8 @@ const Confirmation: React.FC = () => {
           };
           
           setNextAppointment({
-            date: clientRecord.nextAppointmentDate,
-            time: formatTime(clientRecord.nextAppointmentTime || '10:00'),
+            date: checkInRecord.nextAppointmentDate || appointmentDate,
+            time: formatTime(checkInRecord.nextAppointmentTime || '10:00'),
             formattedDate: nextDate.toLocaleDateString('en-US', {
               weekday: 'long',
               year: 'numeric',
@@ -95,10 +104,75 @@ const Confirmation: React.FC = () => {
               day: 'numeric'
             })
           });
+          return;
+        }
+      }
+      
+      // Fallback: Try session storage if API doesn't have appointment yet
+      const checkInData = window.sessionStorage.getItem('checkInInfo');
+      if (checkInData) {
+        try {
+          const parsed = JSON.parse(checkInData);
+          if (parsed.nextAppointmentDate) {
+            const nextDate = new Date(parsed.nextAppointmentDate);
+            const formatTime = (timeStr: string): string => {
+              if (!timeStr) return '10:00 AM';
+              const [hours, minutes] = timeStr.split(':');
+              const hour24 = parseInt(hours);
+              const hour12 = hour24 > 12 ? hour24 - 12 : (hour24 === 0 ? 12 : hour24);
+              const ampm = hour24 >= 12 ? 'PM' : 'AM';
+              return `${hour12}:${minutes} ${ampm}`;
+            };
+            
+            setNextAppointment({
+              date: parsed.nextAppointmentDate,
+              time: formatTime(parsed.nextAppointmentTime || '10:00'),
+              formattedDate: nextDate.toLocaleDateString('en-US', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+              })
+            });
+          }
+        } catch (e) {
+          // Ignore parse errors
         }
       }
     } catch (error) {
       console.error('Failed to fetch next appointment:', error);
+      
+      // Fallback: Try session storage
+      const checkInData = window.sessionStorage.getItem('checkInInfo');
+      if (checkInData) {
+        try {
+          const parsed = JSON.parse(checkInData);
+          if (parsed.nextAppointmentDate) {
+            const nextDate = new Date(parsed.nextAppointmentDate);
+            const formatTime = (timeStr: string): string => {
+              if (!timeStr) return '10:00 AM';
+              const [hours, minutes] = timeStr.split(':');
+              const hour24 = parseInt(hours);
+              const hour12 = hour24 > 12 ? hour24 - 12 : (hour24 === 0 ? 12 : hour24);
+              const ampm = hour24 >= 12 ? 'PM' : 'AM';
+              return `${hour12}:${minutes} ${ampm}`;
+            };
+            
+            setNextAppointment({
+              date: parsed.nextAppointmentDate,
+              time: formatTime(parsed.nextAppointmentTime || '10:00'),
+              formattedDate: nextDate.toLocaleDateString('en-US', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+              })
+            });
+          }
+        } catch (e) {
+          // Ignore parse errors
+        }
+      }
     }
   };
 
@@ -154,9 +228,46 @@ const Confirmation: React.FC = () => {
         const result = await CheckInService.completeCheckIn(completeData);
 
         if (result.success) {
+          // Update session storage with next appointment from response (if available)
+          if (result.data?.nextAppointmentDate) {
+            const updatedCheckInInfo = {
+              ...checkInInfo,
+              nextAppointmentDate: result.data.nextAppointmentDate,
+              nextAppointmentTime: result.data.nextAppointmentTime,
+              nextAppointmentISO: result.data.nextAppointmentISO,
+              ticketNumber: result.data.ticketNumber,
+              isAutoGenerated: result.data.isAutoGenerated
+            };
+            sessionStorage.setItem('checkInInfo', JSON.stringify(updatedCheckInInfo));
+          }
           
-          // Fetch next appointment data
-          await fetchNextAppointment(checkInInfo.clientId);
+          // Fetch next appointment data using checkInId (ensures latest data including admin changes)
+          // Falls back to session storage if API call fails
+          if (checkInInfo.checkInId) {
+            await fetchNextAppointment(checkInInfo.checkInId);
+          } else if (checkInInfo.nextAppointmentDate) {
+            // Fallback: Use session storage data
+            const nextDate = new Date(checkInInfo.nextAppointmentDate);
+            const formatTime = (timeStr: string): string => {
+              if (!timeStr) return '10:00 AM';
+              const [hours, minutes] = timeStr.split(':');
+              const hour24 = parseInt(hours);
+              const hour12 = hour24 > 12 ? hour24 - 12 : (hour24 === 0 ? 12 : hour24);
+              const ampm = hour24 >= 12 ? 'PM' : 'AM';
+              return `${hour12}:${minutes} ${ampm}`;
+            };
+            
+            setNextAppointment({
+              date: checkInInfo.nextAppointmentDate,
+              time: formatTime(checkInInfo.nextAppointmentTime || '10:00'),
+              formattedDate: nextDate.toLocaleDateString('en-US', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+              })
+            });
+          }
         } else {
           console.error('Failed to complete check-in:', result.error);
         }
@@ -261,13 +372,13 @@ const Confirmation: React.FC = () => {
       <Box
         w="full"
         position="absolute"
-        top="0"
+        top={{ base: "50px", md: "0" }}
         left="0"
         right="0"
         bg="white"
         zIndex="1"
-        pb={2}
-        pt={{ base: "60px", md: "20px" }}
+        pb={1}
+        pt={0}
         boxShadow="sm"
       >
         <ProgressSteps
@@ -284,13 +395,13 @@ const Confirmation: React.FC = () => {
 
       {/* Main content container with responsive spacing and sizing */}
       <VStack 
-        spacing={{ base: 6, md: 8 }} 
+        spacing={{ base: 4, md: 6 }} 
         width="full" 
-        maxW={{ base: "100%", md: "1200px" }} 
+        maxW={{ base: "100%", md: "1000px" }} 
         mx="auto"
-        px={{ base: 4, sm: 6, md: 6 }}
-        py={{ base: 6, md: 8 }}
-        pt={{ base: "100px", md: "120px" }}
+        px={{ base: 4, md: 6 }}
+        py={{ base: 4, md: 6 }}
+        pt={{ base: "100px", md: "70px" }}
         position="relative"
         zIndex="0"
         minH="auto"
@@ -325,7 +436,7 @@ const Confirmation: React.FC = () => {
             title="Check-in Complete!"
             subTitle="Your check-in is complete and your next appointment has been scheduled. Please contact us if you need to reschedule."
             logoSize="sm"
-            mb={6}
+            mb={4}
           />
 
           {/* Success Icon */}
@@ -620,7 +731,7 @@ const Confirmation: React.FC = () => {
                     </HStack>
                     <HStack spacing={3} align="center" justify="center">
                       <Text fontSize="lg">📞</Text>
-                      <Text textAlign="center" flex="1">Running late? Please speak to a staff member when you arrive.</Text>
+                      <Text textAlign="center" flex="1">Running late? Need to change your appointment? Please give us a call and we are happy to help.</Text>
                     </HStack>
                   </VStack>
                 </VStack>
@@ -628,24 +739,24 @@ const Confirmation: React.FC = () => {
               
               {/* Action Buttons */}
               <Stack 
-                spacing={{ base: 3, md: 4 }}
+                spacing={{ base: 4, md: 4 }}
                 direction={{ base: "column", md: "row" }}
                 width="full"
                 maxW="100%"
                 justify="center"
                 align="center"
-                pt={{ base: 4, md: 2 }}
+                pt={4}
               >
                 <AssistanceButton 
-                  width={{ base: "100%", md: "320px" }}
-                  height={{ base: "48px", md: "52px" }}
-                  fontSize={{ base: "md", md: "md" }}
+                  width={{ base: "100%", md: "240px" }}
+                  height={{ base: "48px", md: "48px" }}
+                  fontSize="md"
                 />
                 <FinishButton
                   onClick={onOpen}
-                  width={{ base: "100%", md: "320px" }}
-                  height={{ base: "48px", md: "52px" }}
-                  fontSize={{ base: "md", md: "md" }}
+                  width={{ base: "100%", md: "240px" }}
+                  height={{ base: "48px", md: "48px" }}
+                  fontSize="md"
                   rightIcon={<FiCheck />}
                   borderRadius="lg"
                 >

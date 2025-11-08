@@ -38,17 +38,17 @@ const PageHeader: React.FC<PageHeaderProps> = ({
 }) => {
   return (
     <VStack 
-      spacing={{ base: 2, md: 3 }} 
+      spacing={{ base: 1, md: 2 }} 
       align="center" 
       mb={mb}
       px={{ base: 2, md: 0 }}
-      pt={{ base: 2, md: 3 }}
+      pt={0}
       w="full"
     >
       {showLogo && (
         <Box 
           w="full" 
-          mb={{ base: 2, md: 3 }}
+          mb={{ base: 1, md: 2 }}
           position="relative"
         >
           <Logo size={logoSize} />

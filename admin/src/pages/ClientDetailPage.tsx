@@ -45,7 +45,7 @@ import {
 import { ArrowBackIcon } from '@chakra-ui/icons';
 import { FiPrinter } from 'react-icons/fi';
 import { api } from '../lib/api';
-import { getTicketUrl } from '../common/apiConfig';
+import { printTicket } from '../utils/printTicket';
 
 type ClientExtras = {
   nextApptLocation?: string | null;
@@ -288,7 +288,7 @@ const ClientDetailPage: React.FC = () => {
         title: 'Error',
         description: 'Failed to save client extras',
         status: 'error',
-        duration: 5000,
+        duration: 7000,
         isClosable: true,
       });
       console.error('Error saving client extras:', err);
@@ -297,13 +297,19 @@ const ClientDetailPage: React.FC = () => {
     }
   };
 
-  // Print ticket using backend HTML ticket endpoint
+  /**
+   * Handle print ticket action
+   * 
+   * Best Practice: Uses centralized printTicket utility to ensure
+   * consistent ticket generation across the application.
+   * All print buttons use the same endpoint and data structure.
+   */
   const handlePrint = () => {
     if (!id || !client) return;
     
     // Use the client ID that was set during check-in (this is the record ID)
     const checkInId = client.id || id;
-    window.open(getTicketUrl(checkInId), '_blank');
+    printTicket(checkInId);
   };
 
   if (loading) {

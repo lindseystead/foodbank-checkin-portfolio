@@ -37,7 +37,6 @@ interface LanguageSelectorProps {
   size?: 'sm' | 'md' | 'lg';
 }
 
-// Language configuration with English names and flags
 const languages = [
   { code: 'en', name: 'English', countryCode: 'CA' },
   { code: 'fr', name: 'Français', countryCode: 'FR' },
@@ -55,11 +54,9 @@ const LanguageSelector: React.FC<LanguageSelectorProps> = ({
 }) => {
   const { t } = useTranslation();
   
-  // Responsive values
   const menuWidth = useBreakpointValue({ base: "100%", sm: "300px" });
   const flagSize = useBreakpointValue({ base: "20px", md: "24px" });
   
-  // Size-based styling
   const buttonHeight = size === 'sm' ? { base: "40px", md: "40px" } : { base: "48px", md: "48px" };
   const buttonFontSize = size === 'sm' ? { base: "sm", md: "sm" } : { base: "md", md: "md" };
   const buttonWidth = size === 'sm' ? { base: "140px", sm: "160px", md: "200px" } : { base: "160px", sm: "180px", md: "240px" };

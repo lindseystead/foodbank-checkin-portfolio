@@ -1,3 +1,18 @@
+/**
+ * @fileoverview CSV help modal component for Foodbank Check-In and Appointment System admin panel
+ * 
+ * This component provides help documentation and instructions for CSV uploads,
+ * including format requirements, field mappings, and troubleshooting tips
+ * for admin staff using the system.
+ * 
+ * @author Lindsey D. Stead
+ * @version 1.0.0
+ * @since 2025-10-20
+ * @license Proprietary - see LICENSE file for details
+ * 
+ * @see {@link ../CSVUploadPage.tsx} CSV upload page
+ */
+
 import React from 'react';
 import {
   Modal,
@@ -100,7 +115,7 @@ const CSVHelpModal: React.FC<CSVHelpModalProps> = ({ isOpen, onClose }) => {
               <List spacing={2} fontSize="sm">
                 <ListItem color="gray.800">
                   <ListIcon as={FiCheckCircle} color="green.500" />
-                  Log in to the Foodbank Check-In and Appointment System Check-In System
+                  Log in to the Foodbank Check-In and Appointment System admin panel
                 </ListItem>
                 <ListItem color="gray.800">
                   <ListIcon as={FiCheckCircle} color="green.500" />

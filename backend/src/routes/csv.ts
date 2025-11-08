@@ -111,7 +111,35 @@ router.get('/all', async (req, res) => {
 });
 
 /**
- * Export next appointments as CSV
+ * Export all CSV records with updates
+ * 
+ * Exports EVERY person from the original CSV upload with:
+ * - Same headers and order as original upload
+ * - Updated status from check-ins
+ * - Next appointment date (or "NA" if missed)
+ * - Special requests from client check-in
+ * - Original data preserved unless updated
+ * 
+ * GET /api/csv/export-all
+ */
+router.get('/export-all', async (req, res) => {
+  try {
+    const csvContent = CsvController.exportAllWithUpdates();
+    
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', `attachment; filename="appointments-export-${new Date().toISOString().split('T')[0]}.csv"`);
+    res.send(csvContent);
+  } catch (error: any) {
+    res.status(500).json({
+      success: false,
+      error: 'Failed to export CSV',
+      message: error.message
+    });
+  }
+});
+
+/**
+ * Export next appointments as CSV (legacy method - kept for backward compatibility)
  * GET /api/csv/export-next-appointments
  */
 router.get('/export-next-appointments', async (req, res) => {

@@ -45,6 +45,7 @@ import {
   Divider,
 } from '@chakra-ui/react';
 import { FiSearch, FiRefreshCw, FiDownload, FiEye } from 'react-icons/fi';
+import { useToast } from '@chakra-ui/react';
 import { api } from '../../../lib/api';
 import { formatPhoneNumberShort } from '../../../common/utils/phoneFormatter';
 
@@ -57,6 +58,7 @@ const CSVDataViewer: React.FC = () => {
   const [totalRecords, setTotalRecords] = useState(0);
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [selectedRecord, setSelectedRecord] = useState<any>(null);
+  const toast = useToast();
 
   // Load data on mount
   useEffect(() => {
@@ -124,7 +126,29 @@ const CSVDataViewer: React.FC = () => {
   };
 
   const exportToCSV = () => {
-    if (filteredData.length === 0) return;
+    // Check if there's any data to export
+    if (filteredData.length === 0) {
+      toast({
+        title: 'No Data to Export',
+        description: 'There is no check-in data available to export. Please upload a CSV file first or ensure there are check-in records in the system.',
+        status: 'error',
+        duration: 7000,
+        isClosable: true,
+      });
+      return;
+    }
+    
+    // Check if allData is empty (no data at all)
+    if (allData.length === 0) {
+      toast({
+        title: 'No Check-In Data',
+        description: 'There is no check-in data in the system. Please upload a CSV file from Link2Feed to import client data.',
+        status: 'error',
+        duration: 7000,
+        isClosable: true,
+      });
+      return;
+    }
     
     const headers = [
       'Client ID', 'First Name', 'Last Name', 'Phone', 'Email', 
@@ -157,6 +181,15 @@ const CSVDataViewer: React.FC = () => {
     a.download = `clients_${new Date().toISOString().split('T')[0]}.csv`;
     a.click();
     window.URL.revokeObjectURL(url);
+    
+    // Show success message
+    toast({
+      title: 'Export Successful',
+      description: `Successfully exported ${filteredData.length} client record${filteredData.length === 1 ? '' : 's'} to CSV.`,
+      status: 'success',
+      duration: 4000,
+      isClosable: true,
+    });
   };
 
   if (loading) {

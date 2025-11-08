@@ -5,12 +5,19 @@
  * the backend API. It includes basic health checks and system information
  * for deployment monitoring and debugging.
  * 
+ * Best Practices:
+ * - Rate limiting applied at server level (200 req/15min per IP)
+ * - Admin endpoints protected by authentication middleware
+ * - Frontend should implement smart polling (120s intervals, Page Visibility API)
+ * - Automatic expired data purging on status requests
+ * 
  * @author Lindsey D. Stead
  * @version 1.0.0
  * @since 2025-10-20
  * @license Proprietary - see LICENSE file for details
  * 
  * @see {@link ../controllers/checkInController.ts} Main controller for system data
+ * @see {@link https://developer.mozilla.org/en-US/docs/Web/API/Page_Visibility_API} Page Visibility API
  */
 
 import { Router } from 'express';

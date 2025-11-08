@@ -43,6 +43,7 @@ import {
   AlertIcon,
   Center,
   Heading,
+  useToast,
 } from '@chakra-ui/react';
 import { 
   FiSearch, 
@@ -60,6 +61,8 @@ import { formatDistanceToNow } from 'date-fns';
 import { formatToVancouverTime, formatToVancouverTimeOnly } from '../utils/timeFormatter';
 import { formatPhoneNumber } from '../common/utils/phoneFormatter';
 import { getApiUrl } from '../common/apiConfig';
+import { printTicket } from '../utils/printTicket';
+import { getStatusColorHex } from '../common/utils/statusColors';
 
 interface CheckInRecord {
   id: string;
@@ -71,7 +74,6 @@ interface CheckInRecord {
   status: 'Pending' | 'Shipped' | 'Collected' | 'Not Collected' | 'Rescheduled' | 'Cancelled';
   source: 'csv' | 'manual' | 'api';
   
-  // Client data from CSV
   firstName?: string;
   lastName?: string;
   email?: string;
@@ -85,7 +87,6 @@ interface CheckInRecord {
   itemsProvided?: string;
   notes?: string;
   
-  // Check-in completion data
   completionTime?: string;
   dietaryRestrictions?: string[];
   allergies?: string;
@@ -129,6 +130,7 @@ const CheckInsPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const toast = useToast();
   const [selectedCheckIn, setSelectedCheckIn] = useState<CheckInRecord | null>(null);
   const { isOpen: isDetailOpen, onOpen: onDetailOpen, onClose: onDetailClose } = useDisclosure();
 
@@ -211,29 +213,58 @@ const CheckInsPage: React.FC = () => {
     setFilteredCheckIns(filtered);
   }, [checkIns, searchTerm]);
 
-  // Initial fetch
+  // Initial fetch and polling for synchronization
   useEffect(() => {
     fetchCheckIns();
+    
+    // Polling setup with Page Visibility API for synchronization
+    // IMPORTANT: This ensures CheckInsPage stays synchronized with DashboardPage
+    // and other admin features that update check-in data
+    let interval: NodeJS.Timeout | null = null;
+    let isVisible = !document.hidden;
+    
+    const startPolling = () => {
+      if (interval) clearInterval(interval);
+      interval = setInterval(() => {
+        // Only poll if tab is visible
+        if (!document.hidden) {
+          fetchCheckIns();
+        }
+      }, 30000); // Poll every 30 seconds for synchronization
+    };
+    
+    const handleVisibilityChange = () => {
+      isVisible = !document.hidden;
+      if (isVisible) {
+        // Tab became visible - fetch immediately and start polling
+        fetchCheckIns();
+        startPolling();
+      } else {
+        // Tab hidden - stop polling
+        if (interval) {
+          clearInterval(interval);
+          interval = null;
+        }
+      }
+    };
+    
+    // Start polling if visible
+    if (isVisible) {
+      startPolling();
+    }
+    
+    // Listen for visibility changes
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    
+    return () => {
+      if (interval) clearInterval(interval);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
   }, []);
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'Collected':
-        return 'green';
-      case 'Shipped':
-        return 'purple';
-      case 'Pending':
-        return 'yellow';
-      case 'Not Collected':
-        return 'red';
-      case 'Rescheduled':
-        return 'orange';
-      case 'Cancelled':
-        return 'gray';
-      default:
-        return 'gray';
-    }
-  };
+  // IMPORTANT: Use consistent status colors matching analytics chart
+  // Use shared utility for consistency across all admin features
+  // Note: getStatusColorHex is used directly for hex colors, getStatusColorScheme for Chakra color schemes
 
   const getStatusText = (status: string, checkIn: CheckInRecord) => {
     // Check if appointment is late or missed
@@ -273,9 +304,16 @@ const CheckInsPage: React.FC = () => {
     }
   };
 
+  /**
+   * Handle print ticket action
+   * 
+   * Best Practice: Uses centralized printTicket utility to ensure
+   * consistent ticket generation across the application.
+   * All print buttons use the same endpoint and data structure.
+   */
   const handlePrintTicket = (checkIn: CheckInRecord) => {
-    if (checkIn.clientId) {
-      window.open(getApiUrl(`/tickets/${checkIn.id}`), '_blank');
+    if (checkIn.id) {
+      printTicket(checkIn.id);
     }
   };
 
@@ -308,25 +346,85 @@ const CheckInsPage: React.FC = () => {
     }
   };
 
+  /**
+   * Export all CSV records with updates
+   * 
+   * Exports EVERY person from the original CSV upload with:
+   * - Same headers and order as original upload
+   * - Updated status from check-ins
+   * - Next appointment date (or "NA" if missed)
+   * - Special requests from client check-in
+   * - Original data preserved unless updated
+   */
   const handleExportCSV = async () => {
     try {
-      const response = await fetch(getApiUrl('/csv/export-next-appointments'));
+      // Check if there's any check-in data before attempting export
+      if (checkIns.length === 0) {
+        toast({
+          title: 'No Data to Export',
+          description: 'There is no check-in data available to export. Please upload a CSV file first or ensure there are check-in records in the system.',
+          status: 'error',
+          duration: 7000,
+          isClosable: true,
+        });
+        return;
+      }
+      
+      // Use the new export-all endpoint that exports everyone with updates
+      const response = await fetch(getApiUrl('/csv/export-all'));
       
       if (response.ok) {
         const blob = await response.blob();
+        
+        // Check if blob is empty
+        if (blob.size === 0) {
+          toast({
+            title: 'No Data to Export',
+            description: 'There is no check-in data available to export. Please ensure there are check-in records in the system.',
+            status: 'error',
+            duration: 7000,
+            isClosable: true,
+          });
+          return;
+        }
+        
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `next-appointments-${new Date().toISOString().split('T')[0]}.csv`;
+        a.download = `appointments-export-${new Date().toISOString().split('T')[0]}.csv`;
         document.body.appendChild(a);
         a.click();
         window.URL.revokeObjectURL(url);
         document.body.removeChild(a);
+        
+        // Show success message
+        toast({
+          title: 'Export Successful',
+          description: 'All appointment data has been exported to CSV with updates. The file includes everyone from the original upload with updated statuses and next appointments.',
+          status: 'success',
+          duration: 5000,
+          isClosable: true,
+        });
       } else {
-        console.error('Failed to export CSV');
+        // Handle error response
+        const errorData = await response.json().catch(() => ({}));
+        toast({
+          title: 'Export Failed',
+          description: errorData.error || 'Unable to export check-in data. Please ensure there is check-in data in the system and try again.',
+          status: 'error',
+          duration: 7000,
+          isClosable: true,
+        });
       }
     } catch (error) {
       console.error('Error exporting CSV:', error);
+      toast({
+        title: 'Export Failed',
+        description: 'Unable to export check-in data. Please check your connection and try again.',
+        status: 'error',
+        duration: 7000,
+        isClosable: true,
+      });
     }
   };
 
@@ -409,7 +507,7 @@ const CheckInsPage: React.FC = () => {
                 w={{ base: "full", sm: "auto" }}
                 maxW={{ base: "280px", sm: "none" }}
               >
-                Export Next Appointments
+                Export All Appointments
               </Button>
               <Button
                 size={{ base: "sm", sm: "md" }}
@@ -679,9 +777,7 @@ const CheckInsPage: React.FC = () => {
                             fontSize="xs"
                             fontWeight="600"
                             color="white"
-                            bg={getStatusColor(checkIn.status) === 'green' ? '#8CAB6D' : 
-                                 getStatusColor(checkIn.status) === 'yellow' ? '#F4A261' : 
-                                 getStatusColor(checkIn.status) === 'red' ? '#E53E3E' : '#718096'}
+                            bg={getStatusColorHex(checkIn.status, checkIn)}
                           >
                             {getStatusText(checkIn.status, checkIn)}
                           </Box>
@@ -803,10 +899,16 @@ const CheckInsPage: React.FC = () => {
       </Box>
 
         {/* Detail Modal */}
-        <Modal isOpen={isDetailOpen} onClose={onDetailClose} size="xl">
+        <Modal 
+          isOpen={isDetailOpen} 
+          onClose={onDetailClose} 
+          size={{ base: "full", md: "xl" }}
+          scrollBehavior="inside"
+          isCentered
+        >
           <ModalOverlay />
-          <ModalContent>
-            <ModalHeader>Client Details</ModalHeader>
+          <ModalContent maxH={{ base: "100vh", md: "90vh" }}>
+            <ModalHeader fontSize={{ base: "lg", md: "xl" }}>Client Details</ModalHeader>
             <ModalCloseButton />
             <ModalBody>
               {selectedCheckIn && (

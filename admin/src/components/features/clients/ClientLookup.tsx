@@ -1,3 +1,17 @@
+/**
+ * @fileoverview Client lookup component for Foodbank Check-In and Appointment System admin panel
+ * 
+ * This component provides client search and lookup functionality with
+ * real-time filtering and navigation to client detail pages.
+ * 
+ * @author Lindsey D. Stead
+ * @version 1.0.0
+ * @since 2025-10-20
+ * @license Proprietary - see LICENSE file for details
+ * 
+ * @see {@link ../ClientDetailPage.tsx} Client detail page
+ */
+
 import React, { useState, useEffect } from 'react';
 import {
   Box,
@@ -17,7 +31,6 @@ export const ClientLookup: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  // Load all client data once on mount
   useEffect(() => {
     const loadClients = async () => {
       setLoading(true);
@@ -27,7 +40,7 @@ export const ClientLookup: React.FC = () => {
           const result = await response.json();
           const clients = result.data || [];
           setAllClients(clients);
-          setFilteredClients(clients); // Show all clients initially
+          setFilteredClients(clients);
         } else {
           console.error('Failed to load clients, status:', response.status);
         }
@@ -40,7 +53,7 @@ export const ClientLookup: React.FC = () => {
     loadClients();
   }, []);
 
-  // Auto-filter clients as user types (smart filtering)
+  // Filter clients as user types
   useEffect(() => {
     if (!searchTerm.trim()) {
       setFilteredClients(allClients);

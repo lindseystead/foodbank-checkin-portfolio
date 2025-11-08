@@ -17,6 +17,7 @@ import { Box } from '@chakra-ui/react'
 import { Routes, Route } from 'react-router-dom'
 import { AuthProvider } from './contexts/AuthContext'
 import ProtectedRoute from './components/ui/ProtectedRoute'
+import ErrorBoundary from './components/ErrorBoundary'
 import LoginPage from './pages/auth/LoginPage'
 import DashboardPage from './pages/DashboardPage'
 
@@ -29,23 +30,25 @@ import AdminLayout from './components/layout/AdminLayout'
 
 function App() {
   return (
-    <AuthProvider>
-      <Box minH={{ base: "100dvh", md: "100vh" }} bg="gray.50">
-        <Routes>
-          {/* Public routes */}
-          <Route path="/login" element={<LoginPage />} />
-          
-          {/* Protected routes */}
-          <Route path="/" element={<ProtectedRoute><AdminLayout><DashboardPage /></AdminLayout></ProtectedRoute>} />
-          <Route path="/dashboard" element={<ProtectedRoute><AdminLayout><DashboardPage /></AdminLayout></ProtectedRoute>} />
-          <Route path="/csv-upload" element={<ProtectedRoute><AdminLayout><CSVUploadPage /></AdminLayout></ProtectedRoute>} />
-          <Route path="/check-ins" element={<ProtectedRoute><AdminLayout><CheckInsPage /></AdminLayout></ProtectedRoute>} />
-          <Route path="/settings" element={<ProtectedRoute><AdminLayout><SettingsPage /></AdminLayout></ProtectedRoute>} />
-          <Route path="/profile" element={<ProtectedRoute><AdminLayout><ProfilePage /></AdminLayout></ProtectedRoute>} />
-          <Route path="/clients/:id" element={<ProtectedRoute><AdminLayout><ClientDetailPage /></AdminLayout></ProtectedRoute>} />
-        </Routes>
-      </Box>
-    </AuthProvider>
+    <ErrorBoundary>
+      <AuthProvider>
+        <Box minH={{ base: "100dvh", md: "100vh" }} bg="gray.50">
+          <Routes>
+            {/* Public routes */}
+            <Route path="/login" element={<LoginPage />} />
+            
+            {/* Protected routes */}
+            <Route path="/" element={<ProtectedRoute><AdminLayout><DashboardPage /></AdminLayout></ProtectedRoute>} />
+            <Route path="/dashboard" element={<ProtectedRoute><AdminLayout><DashboardPage /></AdminLayout></ProtectedRoute>} />
+            <Route path="/csv-upload" element={<ProtectedRoute><AdminLayout><CSVUploadPage /></AdminLayout></ProtectedRoute>} />
+            <Route path="/check-ins" element={<ProtectedRoute><AdminLayout><CheckInsPage /></AdminLayout></ProtectedRoute>} />
+            <Route path="/settings" element={<ProtectedRoute><AdminLayout><SettingsPage /></AdminLayout></ProtectedRoute>} />
+            <Route path="/profile" element={<ProtectedRoute><AdminLayout><ProfilePage /></AdminLayout></ProtectedRoute>} />
+            <Route path="/clients/:id" element={<ProtectedRoute><AdminLayout><ClientDetailPage /></AdminLayout></ProtectedRoute>} />
+          </Routes>
+        </Box>
+      </AuthProvider>
+    </ErrorBoundary>
   )
 }
 

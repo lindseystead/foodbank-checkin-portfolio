@@ -46,14 +46,8 @@ logs/
 # System Files
 Thumbs.db
 
-# Documentation (don't push these)
-*.md
-!package.json
-!package-lock.json
-!tsconfig*.json
-!vite.config.ts
-!vercel.json
-!railway.json
+# Documentation (keep README files for portfolio)
+# *.md  # Commented out - we want README files in the repo
 
 # Additional security
 .DS_Store

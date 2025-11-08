@@ -10,7 +10,7 @@
  * @since 2025-10-20
  * @license Proprietary - see LICENSE file for details
  * 
- * @see {@link ../frontend/src/theme.ts} Client Frontend Theme
+ * @see {@link ../../client/src/common/theme.ts} Client Frontend Theme
  * @see {@link https://chakra-ui.com/docs/styled-system/theme} Chakra UI Theme Docs
  */
 

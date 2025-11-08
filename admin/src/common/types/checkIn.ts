@@ -1,3 +1,17 @@
+/**
+ * @fileoverview Check-in type definitions for Foodbank Check-In and Appointment System admin panel
+ * 
+ * This module defines TypeScript interfaces for check-in records and related
+ * data structures used throughout the admin panel application.
+ * 
+ * @author Lindsey D. Stead
+ * @version 1.0.0
+ * @since 2025-10-20
+ * @license Proprietary - see LICENSE file for details
+ * 
+ * @see {@link ./index.ts} Type definitions index
+ */
+
 export interface CheckInRecord {
   id: string;
   clientId: string;

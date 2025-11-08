@@ -1,10 +1,16 @@
 /**
- * Link2FeedStatus.tsx
- * --------------------
- * Functional Link2Feed integration with configuration forms and real setup capabilities.
+ * @fileoverview Link2Feed status component for Foodbank Check-In and Appointment System admin panel
  * 
- * Author: Lindsey Stead
- * Date: 2025-08-25
+ * This component displays Link2Feed integration status and provides configuration
+ * options for connecting the system to Link2Feed services. It handles
+ * connection status, API configuration, and integration management.
+ * 
+ * @author Lindsey D. Stead
+ * @version 1.0.0
+ * @since 2025-10-20
+ * @license Proprietary - see LICENSE file for details
+ * 
+ * @see {@link ../SettingsPage.tsx} Settings page
  */
 
 import React, { useState, useEffect } from 'react';
@@ -136,9 +142,9 @@ const Link2FeedStatus: React.FC = () => {
       if (!config.apiKey || !config.secretKey || !config.baseUrl) {
         toast({
           title: 'Configuration Incomplete',
-          description: 'Please fill in all required fields',
+          description: 'Please fill in all required fields: API Key, Secret Key, and Base URL are required.',
           status: 'error',
-          duration: 3000,
+          duration: 7000,
           isClosable: true,
         });
         return;
@@ -159,9 +165,9 @@ const Link2FeedStatus: React.FC = () => {
 
       toast({
         title: 'Configuration Saved',
-        description: 'Link2Feed configuration has been saved successfully',
+        description: 'Link2Feed API configuration has been saved successfully. You can now test the connection.',
         status: 'success',
-        duration: 3000,
+        duration: 4000,
         isClosable: true,
       });
 
@@ -169,9 +175,9 @@ const Link2FeedStatus: React.FC = () => {
     } catch (error) {
       toast({
         title: 'Configuration Error',
-        description: 'Failed to save configuration',
+        description: 'Unable to save the Link2Feed configuration. Please check your input and try again.',
         status: 'error',
-        duration: 3000,
+        duration: 7000,
         isClosable: true,
       });
     } finally {
@@ -184,9 +190,9 @@ const Link2FeedStatus: React.FC = () => {
       // In a real app, this would call the backend to test the connection
       toast({
         title: 'Testing Connection',
-        description: 'Testing Link2Feed API connection...',
+        description: 'Verifying Link2Feed API connection with provided credentials...',
         status: 'info',
-        duration: 2000,
+        duration: 3000,
         isClosable: true,
       });
 
@@ -195,17 +201,17 @@ const Link2FeedStatus: React.FC = () => {
       
       toast({
         title: 'Connection Successful',
-        description: 'Link2Feed API connection test passed!',
+        description: 'Link2Feed API connection test passed. The system can now communicate with Link2Feed.',
         status: 'success',
-        duration: 3000,
+        duration: 4000,
         isClosable: true,
       });
     } catch (error) {
       toast({
         title: 'Connection Failed',
-        description: 'Link2Feed API connection test failed',
+        description: 'Unable to connect to Link2Feed API. Please verify your API credentials and base URL, then try again.',
         status: 'error',
-        duration: 3000,
+        duration: 7000,
         isClosable: true,
       });
     }

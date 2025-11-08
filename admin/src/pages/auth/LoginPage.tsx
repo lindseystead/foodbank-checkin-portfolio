@@ -103,19 +103,19 @@ const LoginPage: React.FC = () => {
       } else {
         toast({
           title: 'Login Failed',
-          description: result.error || 'Please check your credentials and try again.',
+          description: result.error || 'The email or password you entered is incorrect. Please check your credentials and try again.',
           status: 'error',
-          duration: 5000,
+          duration: 7000,
           isClosable: true,
         });
       }
     } catch (error: any) {
       console.error('Login error:', error);
       toast({
-        title: 'Login Error',
-        description: 'An unexpected error occurred. Please try again.',
+        title: 'Connection Error',
+        description: 'Unable to connect to the authentication service. Please check your internet connection and try again.',
         status: 'error',
-        duration: 5000,
+        duration: 7000,
         isClosable: true,
       });
     } finally {
@@ -141,24 +141,24 @@ const LoginPage: React.FC = () => {
   const handleForgotPassword = async () => {
     // Check if email is entered and valid
     if (!credentials.email.trim()) {
-      toast({
-        title: 'Email Required',
-        description: 'Please enter your email address to reset your password.',
-        status: 'warning',
-        duration: 5000,
-        isClosable: true,
-      });
+        toast({
+          title: 'Email Required',
+          description: 'Please enter your email address to reset your password.',
+          status: 'warning',
+          duration: 6000,
+          isClosable: true,
+        });
       return;
     }
 
     if (!validateEmail(credentials.email)) {
-      toast({
-        title: 'Invalid Email',
-        description: 'Please enter a valid email address.',
-        status: 'error',
-        duration: 5000,
-        isClosable: true,
-      });
+        toast({
+          title: 'Invalid Email',
+          description: 'Please enter a valid email address.',
+          status: 'error',
+          duration: 7000,
+          isClosable: true,
+        });
       return;
     }
 
@@ -168,27 +168,27 @@ const LoginPage: React.FC = () => {
       if (result.success) {
         toast({
           title: 'Password Reset Email Sent',
-          description: 'Check your email for password reset instructions. The link will be valid for 1 hour.',
+          description: 'If an account exists with this email, you will receive password reset instructions. The link will expire in 1 hour. Please check your spam folder if you don\'t see the email.',
           status: 'success',
-          duration: 7000,
+          duration: 8000,
           isClosable: true,
         });
       } else {
         toast({
           title: 'Reset Failed',
-          description: result.error || 'Unable to send password reset email. Please try again.',
+          description: result.error || 'Unable to send password reset email. Please verify your email address and try again, or contact your administrator for assistance.',
           status: 'error',
-          duration: 5000,
+          duration: 7000,
           isClosable: true,
         });
       }
     } catch (error: any) {
       console.error('Password reset error:', error);
       toast({
-        title: 'Reset Error',
-        description: 'An unexpected error occurred. Please try again.',
+        title: 'Connection Error',
+        description: 'Unable to process your password reset request. Please check your internet connection and try again.',
         status: 'error',
-        duration: 5000,
+        duration: 6000,
         isClosable: true,
       });
     }

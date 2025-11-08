@@ -1,5 +1,13 @@
 /**
- * Phone number formatting utilities
+ * @fileoverview Phone number formatting utilities for Foodbank Check-In and Appointment System admin panel
+ * 
+ * This module provides phone number formatting functions for consistent
+ * display of phone numbers throughout the admin panel interface.
+ * 
+ * @author Lindsey D. Stead
+ * @version 1.0.0
+ * @since 2025-10-20
+ * @license Proprietary - see LICENSE file for details
  */
 
 /**

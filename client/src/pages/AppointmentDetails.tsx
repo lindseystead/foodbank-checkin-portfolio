@@ -1,9 +1,16 @@
 /**
  * @fileoverview Appointment details page for Foodbank Check-In and Appointment System client application
  * 
- * This page displays appointment information and allows clients to
- * confirm or reschedule their appointments. It shows appointment
- * details, time slots, and provides rescheduling options.
+ * This page displays appointment information and allows clients to confirm their
+ * next appointment. It shows appointment details, system features, and provides
+ * a streamlined confirmation process.
+ * 
+ * Features:
+ * - Auto-schedules the next appointment 21 days from today
+ * - Displays the appointment date clearly
+ * - Shows system features and benefits
+ * - Includes important notices about arrival and policies
+ * - Responsive Chakra UI layout with modern design
  * 
  * @author Lindsey D. Stead
  * @version 1.0.0
@@ -13,23 +20,6 @@
  * @see {@link ../Confirmation.tsx} Confirmation page
  */
 
-/**
- * AppointmentDetails.tsx
- * ----------------------
- * This page displays the user's next automatically scheduled appointment
- * and allows them to reschedule if desired.
- *
- * Main Features:
- * - Auto-schedules the next appointment 21 days from today
- * - Displays the appointment date clearly
- * - Provides options for how the user wants to receive reminders
- * - Includes an important notice about arrival and late policies
- * - Styled using Chakra UI components with responsive layout
- *
- * Author: Lindsey Stead
- * Date: 2025-05-05
- */
-
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -37,16 +27,38 @@ import {
   Box,
   Text,
   Heading,
-  RadioGroup,
+  Stack,
+  HStack,
+  Icon,
+  Divider,
+  Badge,
+  SimpleGrid,
+  Button,
+  Input,
   Select,
   FormControl,
   FormLabel,
-  Input,
-  FormHelperText,
-  FormErrorMessage,
-  Stack,
-  HStack,
+  useToast,
+  useDisclosure,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
+  ModalCloseButton,
 } from "@chakra-ui/react";
+import { 
+  FiCalendar, 
+  FiClock, 
+  FiCheckCircle, 
+  FiInfo, 
+  FiShield,
+  FiZap,
+  FiGlobe,
+  FiUsers,
+  FiEdit3
+} from "react-icons/fi";
 import PrimaryButton from "../components/buttons/PrimaryButton";
 import AssistanceButton from "../components/buttons/AssistanceButton";
 import PageLayout from '../components/layout/PageLayout';
@@ -58,6 +70,8 @@ import { api } from '../lib/api';
 
 const AppointmentDetails: React.FC = () => {
   const navigate = useNavigate();
+  const toast = useToast();
+  const { isOpen: isRescheduleOpen, onOpen: onRescheduleOpen, onClose: onRescheduleClose } = useDisclosure();
 
   const { t } = useTranslation();
  
@@ -66,24 +80,49 @@ const AppointmentDetails: React.FC = () => {
     time: string;
     formattedDate: string;
   } | null>(null);
+  
+  // Reschedule state
+  const [rescheduleDate, setRescheduleDate] = useState<string>('');
+  const [rescheduleTime, setRescheduleTime] = useState<string>('10:00');
+  const [isRescheduling, setIsRescheduling] = useState(false);
+  const [checkInId, setCheckInId] = useState<string | null>(null);
+  
+  // Valid time slots
+  const validTimes = [
+    '09:00', '09:15', '09:30', '09:45',
+    '10:00', '10:15', '10:30', '10:45',
+    '11:00', '11:15',
+    '12:00', '12:15', '12:30', '12:45',
+    '13:00', '13:15', '13:30', '13:45',
+    '14:00', '14:15', '14:30', '14:45'
+  ];
 
-  // Fetch next appointment data
-  const fetchNextAppointment = async (clientId: string) => {
+  /**
+   * Get next appointment for client
+   * 
+   * IMPORTANT: Uses checkInId endpoint for efficiency and reliability.
+   * This ensures we get the latest appointment data, including any admin changes.
+   * Falls back to session storage if API call fails.
+   */
+  const fetchNextAppointment = async (checkInId: string) => {
     try {
-      const response = await api('/checkin');
+      // Use checkInId endpoint - more efficient and always gets latest data
+      // This ensures admin changes are reflected immediately
+      const response = await api(`/checkin/${checkInId}`);
       const data = await response.json();
       
       if (data.success && data.data) {
-        // Find the client's record
-        const clientRecord = data.data.find((record: any) => 
-          record.clientId === clientId && 
-          record.nextAppointmentDate
-        );
+        const checkInRecord = data.data;
         
-        if (clientRecord) {
-          const nextDate = new Date(clientRecord.nextAppointmentDate);
+        // Use nextAppointmentISO (preferred) or nextAppointmentDate (fallback)
+        const appointmentDate = checkInRecord.nextAppointmentISO 
+          ? checkInRecord.nextAppointmentISO 
+          : checkInRecord.nextAppointmentDate;
+        
+        if (appointmentDate) {
+          const nextDate = new Date(appointmentDate);
           
-          // Convert 24-hour time to 12-hour AM/PM format
+          // Convert to 12-hour format
           const formatTime = (timeStr: string): string => {
             if (!timeStr) return '10:00 AM';
             
@@ -96,8 +135,8 @@ const AppointmentDetails: React.FC = () => {
           };
           
           setNextAppointment({
-            date: clientRecord.nextAppointmentDate,
-            time: formatTime(clientRecord.nextAppointmentTime || '10:00'),
+            date: checkInRecord.nextAppointmentDate || appointmentDate,
+            time: formatTime(checkInRecord.nextAppointmentTime || '10:00'),
             formattedDate: nextDate.toLocaleDateString('en-US', {
               weekday: 'long',
               year: 'numeric',
@@ -105,15 +144,85 @@ const AppointmentDetails: React.FC = () => {
               day: 'numeric'
             })
           });
+          return;
+        }
+      }
+      
+      // Fallback: Try session storage if API doesn't have appointment yet
+      const checkInData = window.sessionStorage.getItem('checkInInfo');
+      if (checkInData) {
+        try {
+          const parsed = JSON.parse(checkInData);
+          if (parsed.nextAppointmentDate) {
+            const nextDate = new Date(parsed.nextAppointmentDate);
+            const formatTime = (timeStr: string): string => {
+              if (!timeStr) return '10:00 AM';
+              const [hours, minutes] = timeStr.split(':');
+              const hour24 = parseInt(hours);
+              const hour12 = hour24 > 12 ? hour24 - 12 : (hour24 === 0 ? 12 : hour24);
+              const ampm = hour24 >= 12 ? 'PM' : 'AM';
+              return `${hour12}:${minutes} ${ampm}`;
+            };
+            
+            setNextAppointment({
+              date: parsed.nextAppointmentDate,
+              time: formatTime(parsed.nextAppointmentTime || '10:00'),
+              formattedDate: nextDate.toLocaleDateString('en-US', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+              })
+            });
+          }
+        } catch (e) {
+          // Ignore parse errors
         }
       }
     } catch (error) {
       console.error('Failed to fetch next appointment:', error);
+      
+      // Fallback: Try session storage
+      const checkInData = window.sessionStorage.getItem('checkInInfo');
+      if (checkInData) {
+        try {
+          const parsed = JSON.parse(checkInData);
+          if (parsed.nextAppointmentDate) {
+            const nextDate = new Date(parsed.nextAppointmentDate);
+            const formatTime = (timeStr: string): string => {
+              if (!timeStr) return '10:00 AM';
+              const [hours, minutes] = timeStr.split(':');
+              const hour24 = parseInt(hours);
+              const hour12 = hour24 > 12 ? hour24 - 12 : (hour24 === 0 ? 12 : hour24);
+              const ampm = hour24 >= 12 ? 'PM' : 'AM';
+              return `${hour12}:${minutes} ${ampm}`;
+            };
+            
+            setNextAppointment({
+              date: parsed.nextAppointmentDate,
+              time: formatTime(parsed.nextAppointmentTime || '10:00'),
+              formattedDate: nextDate.toLocaleDateString('en-US', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+              })
+            });
+          }
+        } catch (e) {
+          // Ignore parse errors
+        }
+      }
     }
   };
 
-  // Fetch next appointment data on component load
+  // Load appointment data on mount and poll for updates
+  // IMPORTANT: Uses checkInId for reliable, efficient fetching
+  // This ensures we always get the latest appointment (including admin changes)
+  // Polls every 30 seconds to catch admin updates during check-in process
   React.useEffect(() => {
+    let checkInIdForPolling: string | null = null;
+    
     const fetchData = async () => {
       if (typeof window !== 'undefined') {
         const checkInData = window.sessionStorage.getItem('checkInInfo');
@@ -121,9 +230,40 @@ const AppointmentDetails: React.FC = () => {
           try {
             const parsed = JSON.parse(checkInData);
             
-            // Fetch next appointment if we have clientId
-            if (parsed.clientId) {
-              await fetchNextAppointment(parsed.clientId);
+            // Store checkInId for rescheduling and polling
+            if (parsed.checkInId) {
+              setCheckInId(parsed.checkInId);
+              checkInIdForPolling = parsed.checkInId;
+            }
+            
+            // Use checkInId for reliable fetching (preferred)
+            // Falls back to clientId if checkInId not available
+            if (parsed.checkInId) {
+              await fetchNextAppointment(parsed.checkInId);
+            } else if (parsed.clientId) {
+              // Fallback: Try to get from session storage first
+              if (parsed.nextAppointmentDate) {
+                const nextDate = new Date(parsed.nextAppointmentDate);
+                const formatTime = (timeStr: string): string => {
+                  if (!timeStr) return '10:00 AM';
+                  const [hours, minutes] = timeStr.split(':');
+                  const hour24 = parseInt(hours);
+                  const hour12 = hour24 > 12 ? hour24 - 12 : (hour24 === 0 ? 12 : hour24);
+                  const ampm = hour24 >= 12 ? 'PM' : 'AM';
+                  return `${hour12}:${minutes} ${ampm}`;
+                };
+                
+                setNextAppointment({
+                  date: parsed.nextAppointmentDate,
+                  time: formatTime(parsed.nextAppointmentTime || '10:00'),
+                  formattedDate: nextDate.toLocaleDateString('en-US', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                  })
+                });
+              }
             }
           } catch (error) {
             console.error('Error parsing checkInData:', error);
@@ -132,69 +272,154 @@ const AppointmentDetails: React.FC = () => {
       }
     };
     
+    // Initial fetch
     fetchData();
-  }, []);
-
-  const [notificationPreference, setNotificationPreference] =
-    useState<string>("email");
-  const [phoneCarrier, setPhoneCarrier] = useState<string>("");
-  const [email, setEmail] = useState<string>("");
-  const [phone, setPhone] = useState<string>("");
-  const [phoneError, setPhoneError] = useState<string>("");
-  const [emailError, setEmailError] = useState<string>("");
-  const [showErrors] = useState(false);
-
-  const phoneCarriers = [
-    { value: "verizon", label: "Verizon" },
-    { value: "att", label: "AT&T" },
-    { value: "tmobile", label: "T-Mobile" },
-    { value: "sprint", label: "Sprint" },
-    { value: "rogers", label: "Rogers" },
-    { value: "bell", label: "Bell" },
-    { value: "telus", label: "Telus" },
-    { value: "other", label: "Other" },
-  ];
-
-  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const inputValue = e.target.value;
-    const digitsOnly = inputValue.replace(/\D/g, '');
-
-    let formattedPhone = '';
-    if (digitsOnly.length <= 3) {
-      formattedPhone = digitsOnly;
-    } else if (digitsOnly.length <= 6) {
-      formattedPhone = `(${digitsOnly.slice(0, 3)}) ${digitsOnly.slice(3)}`;
-    } else {
-      formattedPhone = `(${digitsOnly.slice(0, 3)}) ${digitsOnly.slice(3, 6)}-${digitsOnly.slice(6, 10)}`;
+    
+    // Polling setup with Page Visibility API for real-time updates
+    // IMPORTANT: This ensures admin changes to appointments are reflected immediately
+    // Polls every 30 seconds when tab is visible to catch admin updates
+    let interval: NodeJS.Timeout | null = null;
+    let isVisible = !document.hidden;
+    
+    const startPolling = () => {
+      if (interval) clearInterval(interval);
+      interval = setInterval(() => {
+        // Only poll if tab is visible and we have a checkInId
+        if (!document.hidden && checkInIdForPolling) {
+          fetchNextAppointment(checkInIdForPolling);
+        }
+      }, 30000); // Poll every 30 seconds
+    };
+    
+    const handleVisibilityChange = () => {
+      isVisible = !document.hidden;
+      if (isVisible) {
+        // Tab became visible - fetch immediately and start polling
+        if (checkInIdForPolling) {
+          fetchNextAppointment(checkInIdForPolling);
+        }
+        startPolling();
+      } else {
+        // Tab hidden - stop polling
+        if (interval) {
+          clearInterval(interval);
+          interval = null;
+        }
+      }
+    };
+    
+    // Wait a bit for checkInId to be set, then start polling
+    const timeoutId = setTimeout(() => {
+      if (checkInIdForPolling && isVisible) {
+        startPolling();
+      }
+    }, 1000);
+    
+    // Listen for visibility changes
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    
+    return () => {
+      clearTimeout(timeoutId);
+      if (interval) clearInterval(interval);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, []); // Empty dependency array - only run once on mount
+  
+  // Handle reschedule appointment
+  const handleReschedule = async () => {
+    if (!checkInId || !rescheduleDate) {
+      toast({
+        title: 'Error',
+        description: 'Please select a date and time for your appointment.',
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      });
+      return;
     }
-
-    setPhone(formattedPhone);
-    setPhoneError('');
+    
+    setIsRescheduling(true);
+    
+    try {
+      const response = await api(`/checkin/${checkInId}/reschedule`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ newDate: rescheduleDate, newTime: rescheduleTime }),
+      });
+      
+      const data = await response.json();
+      
+      if (data.success && data.data) {
+        // Update local state
+        const newDate = new Date(data.data.nextAppointmentISO);
+        const formatTime = (timeStr: string): string => {
+          if (!timeStr) return '10:00 AM';
+          const [hours, minutes] = timeStr.split(':');
+          const hour24 = parseInt(hours);
+          const hour12 = hour24 > 12 ? hour24 - 12 : (hour24 === 0 ? 12 : hour24);
+          const ampm = hour24 >= 12 ? 'PM' : 'AM';
+          return `${hour12}:${minutes} ${ampm}`;
+        };
+        
+        setNextAppointment({
+          date: data.data.nextAppointmentDate,
+          time: formatTime(data.data.nextAppointmentTime || '10:00'),
+          formattedDate: newDate.toLocaleDateString('en-US', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+          })
+        });
+        
+        // Update sessionStorage
+        const checkInData = window.sessionStorage.getItem('checkInInfo');
+        if (checkInData) {
+          try {
+            const parsed = JSON.parse(checkInData);
+            parsed.nextAppointmentDate = data.data.nextAppointmentDate;
+            parsed.nextAppointmentTime = data.data.nextAppointmentTime;
+            parsed.nextAppointmentISO = data.data.nextAppointmentISO;
+            window.sessionStorage.setItem('checkInInfo', JSON.stringify(parsed));
+          } catch (e) {
+            console.error('Error updating sessionStorage:', e);
+          }
+        }
+        
+        toast({
+          title: 'Appointment Rescheduled',
+          description: 'Your appointment has been successfully rescheduled.',
+          status: 'success',
+          duration: 5000,
+          isClosable: true,
+        });
+        
+        onRescheduleClose();
+        setRescheduleDate('');
+        setRescheduleTime('10:00');
+      } else {
+        throw new Error(data.error || 'Failed to reschedule appointment');
+      }
+    } catch (error: any) {
+      console.error('Reschedule error:', error);
+      toast({
+        title: 'Reschedule Failed',
+        description: error.message || 'Failed to reschedule appointment. Please try again.',
+        status: 'error',
+        duration: 7000,
+        isClosable: true,
+      });
+    } finally {
+      setIsRescheduling(false);
+    }
   };
-
-  const validateEmail = (email: string): boolean => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!email.trim()) {
-      setEmailError('Email is required');
-      return false;
-    } else if (!emailRegex.test(email)) {
-      setEmailError('Please enter a valid email address');
-      return false;
-    }
-    setEmailError('');
-    return true;
-  };
-
-  const validatePhone = (): boolean => {
-    if (!phone.trim()) {
-      setPhoneError('Phone number is required');
-      return false;
-    } else if (phone.replace(/\D/g, '').length !== 10) {
-      setPhoneError('Please enter a valid 10-digit phone number');
-      return false;
-    }
-    setPhoneError('');
-    return true;
+  
+  // Calculate minimum date (21 days from today)
+  const getMinDate = () => {
+    const today = new Date();
+    const minDate = new Date(today);
+    minDate.setDate(today.getDate() + 21);
+    return minDate.toISOString().split('T')[0];
   };
 
   const handleSubmit = () => {
@@ -207,29 +432,23 @@ const AppointmentDetails: React.FC = () => {
       date: nextAppointment.date,
       formattedDate: nextAppointment.formattedDate,
       time: nextAppointment.time,
-      notificationPreference,
-      ...(notificationPreference === "email"
-        ? { email }
-        : { phone, phoneCarrier }),
     };
     sessionStorage.setItem("appointmentData", JSON.stringify(appointmentData));
     navigate("/confirmation");
   };
-
-
 
   return (
     <PageLayout showBackButton isScrollable>
       <Box
         w="full"
         position="absolute"
-        top="0"
+        top={{ base: "50px", md: "0" }}
         left="0"
         right="0"
         bg="white"
         zIndex="1"
-        pb={2}
-        pt={{ base: "60px", md: "20px" }}
+        pb={1}
+        pt={0}
         boxShadow="sm"
       >
         <ProgressSteps
@@ -246,13 +465,13 @@ const AppointmentDetails: React.FC = () => {
 
       {/* Main content container with responsive spacing and sizing */}
       <VStack 
-        spacing={{ base: 6, md: 8 }} 
+        spacing={{ base: 4, md: 6 }} 
         width="full" 
-        maxW={{ base: "100%", md: "1200px" }} 
+        maxW={{ base: "100%", md: "1000px" }} 
         mx="auto"
-        px={{ base: 4, sm: 6, md: 6 }}
-        py={{ base: 6, md: 8 }}
-        pt={{ base: "120px", md: "140px" }}
+        px={{ base: 4, md: 6 }}
+        py={{ base: 4, md: 6 }}
+        pt={{ base: "100px", md: "70px" }}
         position="relative"
         zIndex="0"
         minH="auto"
@@ -286,344 +505,554 @@ const AppointmentDetails: React.FC = () => {
             title={t('appointment.title')}
             subTitle={t('appointment.subtitle')}
             logoSize="sm"
-            mb={6}
+            mb={4}
           />
 
-          {/* Next Appointment Information */}
+          {/* Next Appointment Information - Enhanced Design */}
           <Box 
-            bg="green.50"
-            borderRadius="lg" 
-            p={{ base: 4, md: 6 }}
-            mb={6}
-            border="1px solid"
-            borderColor="green.200"
+            bg="linear-gradient(135deg, #8CAB6D 0%, #7A9A5B 100%)"
+            borderRadius="2xl" 
+            p={{ base: 6, md: 8 }}
+            mb={8}
+            border="2px solid"
+            borderColor="green.300"
             w="full"
-            maxW="600px"
+            maxW="700px"
             mx="auto"
+            boxShadow="lg"
+            position="relative"
+            overflow="hidden"
+            _before={{
+              content: '""',
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: 'linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 100%)',
+              pointerEvents: 'none'
+            }}
           >
-            <VStack spacing={3} align="center">
-              <Text fontSize="xs" fontWeight="600" color="green.600" textTransform="uppercase" letterSpacing="wide">
-                🗓️ Your Next Appointment
-              </Text>
-              <Text 
-                fontSize={{ base: "lg", md: "xl" }} 
-                fontWeight="600" 
-                color="green.700"
-                textAlign="center"
-                lineHeight="1.3"
-                px={2}
-                wordBreak="break-word"
+            <VStack spacing={4} align="center" position="relative" zIndex={1}>
+              <HStack spacing={2} align="center">
+                <Icon as={FiCheckCircle} boxSize={6} color="white" />
+                <Text fontSize="sm" fontWeight="600" color="white" textTransform="uppercase" letterSpacing="wide">
+                  Appointment Confirmed
+                </Text>
+              </HStack>
+              
+              <Box
+                bg="white"
+                borderRadius="xl"
+                p={{ base: 4, md: 6 }}
+                w="full"
+                boxShadow="md"
               >
-                {nextAppointment ? nextAppointment.formattedDate : 'Loading appointment...'}
-              </Text>
-              <Text 
-                fontSize={{ base: "md", md: "lg" }} 
-                fontWeight="500" 
-                color="green.600"
-                textAlign="center"
-                px={2}
-              >
-                {nextAppointment ? `at ${nextAppointment.time}` : ''}
-              </Text>
-              <Text 
-                fontSize="sm" 
-                color="green.600"
-                textAlign="center"
-                px={2}
-                fontStyle="italic"
-              >
-                This appointment has been automatically scheduled for you please call 
-              </Text>
-            </VStack>
-          </Box>
-
-          {/* Secondary Information - Reminder Preferences */}
-          <Box mb={8} maxW={{ base: "100%", md: "900px" }} mx="auto">
-            <VStack spacing={6} align="stretch">
-              <Box textAlign="center">
-                <Heading size="md" color="gray.800" mb={4}>
-                  📱 How would you like to receive your reminder?
-                </Heading>
+                <VStack spacing={3} align="center">
+                  <HStack spacing={2} align="center" color="green.600">
+                    <Icon as={FiCalendar} boxSize={5} />
+                    <Text fontSize="xs" fontWeight="600" textTransform="uppercase" letterSpacing="wide">
+                      Your Next Appointment
+                    </Text>
+                  </HStack>
+                  
+                  <Text 
+                    fontSize={{ base: "xl", md: "2xl" }} 
+                    fontWeight="700" 
+                    color="gray.800"
+                    textAlign="center"
+                    lineHeight="1.2"
+                    px={2}
+                    wordBreak="break-word"
+                  >
+                    {nextAppointment ? nextAppointment.formattedDate : 'Loading appointment...'}
+                  </Text>
+                  
+                  <HStack spacing={2} align="center" color="green.600" mt={2}>
+                    <Icon as={FiClock} boxSize={4} />
+                    <Text 
+                      fontSize={{ base: "lg", md: "xl" }} 
+                      fontWeight="600" 
+                      color="green.600"
+                      textAlign="center"
+                    >
+                      {nextAppointment ? nextAppointment.time : ''}
+                    </Text>
+                  </HStack>
+                  
+                  <Badge 
+                    colorScheme="green" 
+                    variant="subtle" 
+                    fontSize="xs" 
+                    px={3} 
+                    py={1} 
+                    borderRadius="full"
+                    mt={2}
+                  >
+                    ✓ Auto-Scheduled
+                  </Badge>
+                </VStack>
               </Box>
               
-              <RadioGroup
-                value={notificationPreference}
-                onChange={setNotificationPreference}
+              <Text 
+                fontSize="sm" 
+                color="white"
+                textAlign="center"
+                px={2}
+                opacity={0.95}
+                maxW="500px"
               >
-                <Box 
-                  display="grid" 
-                  gridTemplateColumns={{ base: "1fr", md: "repeat(2, 1fr)" }}
-                  gap={{ base: 3, md: 4 }}
-                  w="full"
-                  maxW={{ base: "100%", md: "800px" }}
-                  mx="auto"
-                  px={{ base: 2, md: 0 }}
-                >
-                  {/* Email Option */}
-                  <Box
-                    border="2px solid"
-                    borderColor={notificationPreference === "email" ? "client.primary" : "gray.200"}
-                    borderRadius="xl"
-                    p={{ base: 4, md: 6 }}
-                    bg={notificationPreference === "email" ? "brand.50" : "white"}
-                    transition="all 0.3s ease"
-                    _hover={{ 
-                      borderColor: "client.primary", 
-                      bg: "brand.25",
-                      transform: "translateY(-2px)",
-                      boxShadow: "lg"
-                    }}
-                    cursor="pointer"
-                    onClick={() => setNotificationPreference("email")}
-                    w="full"
-                    position="relative"
-                    overflow="hidden"
-                    minH={{ base: "auto", md: "120px" }}
-                  >
-                    <VStack spacing={4} align="start">
-                      <HStack spacing={3} align="center">
-                        <Box
-                          w={6}
-                          h={6}
-                          borderRadius="full"
-                          border="2px solid"
-                          borderColor={notificationPreference === "email" ? "client.primary" : "gray.300"}
-                          bg={notificationPreference === "email" ? "client.primary" : "white"}
-                          display="flex"
-                          alignItems="center"
-                          justifyContent="center"
-                        >
-                          {notificationPreference === "email" && (
-                            <Box w={2} h={2} bg="white" borderRadius="full" />
-                          )}
-                        </Box>
-                        <VStack align="start" spacing={1}>
-                          <Text fontSize="lg" fontWeight="600" color="client.primary">
-                            📧 Email Confirmation
-                          </Text>
-                          <Text fontSize="sm" color="gray.600">
-                            Get a detailed email with appointment details
-                          </Text>
-                        </VStack>
-                      </HStack>
-                      
-                      {notificationPreference === "email" && (
-                        <Box w="full" pl={{ base: 0, md: 9 }} mt={2}>
-                          <FormControl isInvalid={showErrors && !!emailError}>
-                            <FormLabel fontSize="sm" fontWeight="500" color="gray.700" mb={2}>
-                              Email Address
-                            </FormLabel>
-                            <Input
-                              id="email"
-                              type="email"
-                              value={email}
-                              onChange={(e) => {
-                                setEmail(e.target.value);
-                                if (showErrors) validateEmail(e.target.value);
-                              }}
-                              placeholder="your.email@example.com"
-                              size={{ base: "md", md: "lg" }}
-                              height={{ base: "40px", md: "48px" }}
-                              borderRadius="lg"
-                              bg="white"
-                              border="2px solid"
-                              borderColor="brand.200"
-                              _focus={{
-                                borderColor: 'client.primary',
-                                boxShadow: '0 0 0 3px rgba(37, 56, 93, 0.1)',
-                              }}
-                              _hover={{ borderColor: 'brand.300' }}
-                              w="full"
-                              maxW="100%"
-                            />
-                            <FormErrorMessage fontSize="xs" mt={1}>{emailError}</FormErrorMessage>
-                          </FormControl>
-                        </Box>
-                      )}
-                    </VStack>
-                  </Box>
-
-                  {/* SMS Option */}
-                  <Box
-                    border="2px solid"
-                    borderColor={notificationPreference === "sms" ? "accent.green.400" : "gray.200"}
-                    borderRadius="xl"
-                    p={{ base: 4, md: 6 }}
-                    bg={notificationPreference === "sms" ? "accent.green.50" : "white"}
-                    transition="all 0.3s ease"
-                    _hover={{ 
-                      borderColor: "accent.green.400", 
-                      bg: "accent.green.25",
-                      transform: "translateY(-2px)",
-                      boxShadow: "lg"
-                    }}
-                    cursor="pointer"
-                    onClick={() => setNotificationPreference("sms")}
-                    w="full"
-                    position="relative"
-                    overflow="hidden"
-                    minH={{ base: "auto", md: "120px" }}
-                  >
-                    <VStack spacing={4} align="start">
-                      <HStack spacing={3} align="center">
-                        <Box
-                          w={6}
-                          h={6}
-                          borderRadius="full"
-                          border="2px solid"
-                          borderColor={notificationPreference === "sms" ? "accent.green.400" : "gray.300"}
-                          bg={notificationPreference === "sms" ? "accent.green.400" : "white"}
-                          display="flex"
-                          alignItems="center"
-                          justifyContent="center"
-                        >
-                          {notificationPreference === "sms" && (
-                            <Box w={2} h={2} bg="white" borderRadius="full" />
-                          )}
-                        </Box>
-                        <VStack align="start" spacing={1}>
-                          <Text fontSize="lg" fontWeight="600" color="accent.green.500">
-                            📱 SMS Text Message
-                          </Text>
-                          <Text fontSize="sm" color="gray.600">
-                            Get a quick text reminder on your phone
-                          </Text>
-                        </VStack>
-                      </HStack>
-                      
-                      {notificationPreference === "sms" && (
-                        <Box w="full" pl={{ base: 0, md: 9 }} mt={2}>
-                          <VStack spacing={3} align="stretch">
-                            <FormControl isInvalid={showErrors && !!phoneError}>
-                              <FormLabel fontSize="sm" fontWeight="500" color="gray.700" mb={2}>
-                                Phone Number
-                              </FormLabel>
-                              <Input
-                                id="phone"
-                                type="tel"
-                                value={phone}
-                                onChange={(e) => {
-                                  handlePhoneChange(e);
-                                  if (showErrors) validatePhone();
-                                }}
-                                placeholder="(555) 555-5555"
-                                size={{ base: "md", md: "lg" }}
-                                height={{ base: "40px", md: "48px" }}
-                                borderRadius="lg"
-                                bg="white"
-                                border="2px solid"
-                                borderColor="accent.green.200"
-                                _focus={{
-                                  borderColor: 'accent.green.400',
-                                  boxShadow: '0 0 0 3px rgba(138, 171, 109, 0.1)',
-                                }}
-                                _hover={{ borderColor: 'accent.green.300' }}
-                                maxLength={14}
-                                w="full"
-                                maxW="100%"
-                              />
-                              <FormErrorMessage fontSize="xs" mt={1}>{phoneError}</FormErrorMessage>
-                            </FormControl>
-                            
-                            <FormControl isInvalid={showErrors && !phoneCarrier}>
-                              <FormLabel fontSize="sm" fontWeight="500" color="gray.700" mb={2}>
-                                Phone Carrier
-                              </FormLabel>
-                              <Select
-                                id="phoneCarrier"
-                                value={phoneCarrier}
-                                onChange={(e) => setPhoneCarrier(e.target.value)}
-                                placeholder="Choose your carrier"
-                                size={{ base: "md", md: "lg" }}
-                                height={{ base: "40px", md: "48px" }}
-                                borderRadius="lg"
-                                bg="white"
-                                border="2px solid"
-                                borderColor="accent.green.200"
-                                _focus={{
-                                  borderColor: 'accent.green.400',
-                                  boxShadow: '0 0 0 3px rgba(138, 171, 109, 0.1)',
-                                }}
-                                _hover={{ borderColor: 'accent.green.300' }}
-                                w="full"
-                                maxW="100%"
-                              >
-                              {phoneCarriers.map((carrier) => (
-                                <option key={carrier.value} value={carrier.value}>
-                                  {carrier.label}
-                                </option>
-                              ))}
-                            </Select>
-                            {showErrors && !phoneCarrier && (
-                              <FormErrorMessage fontSize="xs">Please select your phone carrier</FormErrorMessage>
-                            )}
-                            <FormHelperText fontSize="xs" color="gray.500">
-                              Required for SMS notifications
-                            </FormHelperText>
-                          </FormControl>
-                        </VStack>
-                      </Box>
-                    )}
-                    </VStack>
-                  </Box>
-                </Box>
-              </RadioGroup>
+                Your next appointment has been automatically scheduled. Please arrive on time for your visit.
+              </Text>
+              
+              {/* Reschedule Button */}
+              <Button
+                leftIcon={<Icon as={FiEdit3} />}
+                onClick={onRescheduleOpen}
+                colorScheme="whiteAlpha"
+                variant="outline"
+                size="sm"
+                mt={2}
+                borderColor="white"
+                color="white"
+                _hover={{ bg: 'rgba(255, 255, 255, 0.1)' }}
+              >
+                Reschedule Appointment
+              </Button>
             </VStack>
           </Box>
 
-          {/* Important Notice - Moved to bottom for better flow */}
+          {/* System Features - Proof of Concept Showcase */}
+          <Box mb={8} maxW={{ base: "100%", md: "900px" }} mx="auto">
+            <VStack spacing={6} align="stretch">
+              <Box textAlign="center" mb={4}>
+                <Heading size="md" color="gray.800" mb={2}>
+                  ✨ What to Expect
+                </Heading>
+                <Text fontSize="md" color="gray.600" maxW="600px" mx="auto">
+                  Our digital check-in system makes your visit quick and easy
+                </Text>
+              </Box>
+              
+              <SimpleGrid 
+                columns={{ base: 1, sm: 2 }} 
+                spacing={{ base: 4, md: 6 }}
+                w="full"
+              >
+                {/* Fast Check-In Feature */}
+                <Box
+                  bg="blue.50"
+                  border="2px solid"
+                  borderColor="blue.200"
+                  borderRadius="xl"
+                  p={{ base: 5, md: 6 }}
+                  transition="all 0.3s ease"
+                  _hover={{ 
+                    transform: "translateY(-4px)",
+                    boxShadow: "lg",
+                    borderColor: "blue.300"
+                  }}
+                  position="relative"
+                  overflow="hidden"
+                >
+                  <VStack spacing={3} align="start">
+                    <HStack spacing={3} align="center">
+                      <Box
+                        bg="blue.500"
+                        borderRadius="lg"
+                        p={3}
+                        boxShadow="md"
+                      >
+                        <Icon as={FiZap} boxSize={6} color="white" />
+                      </Box>
+                      <VStack align="start" spacing={0}>
+                        <Text fontSize="lg" fontWeight="700" color="blue.700">
+                          Fast Check-In
+                        </Text>
+                        <Text fontSize="xs" color="blue.600">
+                          Under 5 minutes
+                        </Text>
+                      </VStack>
+                    </HStack>
+                    <Text fontSize="sm" color="gray.700" lineHeight="1.6">
+                      Complete your check-in quickly with our streamlined digital process. No more waiting in long lines.
+                    </Text>
+                  </VStack>
+                </Box>
+
+                {/* Multilingual Support Feature */}
+                <Box
+                  bg="purple.50"
+                  border="2px solid"
+                  borderColor="purple.200"
+                  borderRadius="xl"
+                  p={{ base: 5, md: 6 }}
+                  transition="all 0.3s ease"
+                  _hover={{ 
+                    transform: "translateY(-4px)",
+                    boxShadow: "lg",
+                    borderColor: "purple.300"
+                  }}
+                  position="relative"
+                  overflow="hidden"
+                >
+                  <VStack spacing={3} align="start">
+                    <HStack spacing={3} align="center">
+                      <Box
+                        bg="purple.500"
+                        borderRadius="lg"
+                        p={3}
+                        boxShadow="md"
+                      >
+                        <Icon as={FiGlobe} boxSize={6} color="white" />
+                      </Box>
+                      <VStack align="start" spacing={0}>
+                        <Text fontSize="lg" fontWeight="700" color="purple.700">
+                          Multilingual
+                        </Text>
+                        <Text fontSize="xs" color="purple.600">
+                          7 languages available
+                        </Text>
+                      </VStack>
+                    </HStack>
+                    <Text fontSize="sm" color="gray.700" lineHeight="1.6">
+                      Use the system in your preferred language. We support English, French, Spanish, Chinese, Hindi, Arabic, and Punjabi.
+                    </Text>
+                  </VStack>
+                </Box>
+
+                {/* Privacy & Security Feature */}
+                <Box
+                  bg="green.50"
+                  border="2px solid"
+                  borderColor="green.200"
+                  borderRadius="xl"
+                  p={{ base: 5, md: 6 }}
+                  transition="all 0.3s ease"
+                  _hover={{ 
+                    transform: "translateY(-4px)",
+                    boxShadow: "lg",
+                    borderColor: "green.300"
+                  }}
+                  position="relative"
+                  overflow="hidden"
+                >
+                  <VStack spacing={3} align="start">
+                    <HStack spacing={3} align="center">
+                      <Box
+                        bg="green.500"
+                        borderRadius="lg"
+                        p={3}
+                        boxShadow="md"
+                      >
+                        <Icon as={FiShield} boxSize={6} color="white" />
+                      </Box>
+                      <VStack align="start" spacing={0}>
+                        <Text fontSize="lg" fontWeight="700" color="green.700">
+                          Privacy First
+                        </Text>
+                        <Text fontSize="xs" color="green.600">
+                          Your data is protected
+                        </Text>
+                      </VStack>
+                    </HStack>
+                    <Text fontSize="sm" color="gray.700" lineHeight="1.6">
+                      All check-in data is automatically deleted after 24 hours. Your privacy is our priority.
+                    </Text>
+                  </VStack>
+                </Box>
+
+                {/* Accessible Design Feature */}
+                <Box
+                  bg="orange.50"
+                  border="2px solid"
+                  borderColor="orange.200"
+                  borderRadius="xl"
+                  p={{ base: 5, md: 6 }}
+                  transition="all 0.3s ease"
+                  _hover={{ 
+                    transform: "translateY(-4px)",
+                    boxShadow: "lg",
+                    borderColor: "orange.300"
+                  }}
+                  position="relative"
+                  overflow="hidden"
+                >
+                  <VStack spacing={3} align="start">
+                    <HStack spacing={3} align="center">
+                      <Box
+                        bg="orange.500"
+                        borderRadius="lg"
+                        p={3}
+                        boxShadow="md"
+                      >
+                        <Icon as={FiUsers} boxSize={6} color="white" />
+                      </Box>
+                      <VStack align="start" spacing={0}>
+                        <Text fontSize="lg" fontWeight="700" color="orange.700">
+                          Accessible
+                        </Text>
+                        <Text fontSize="xs" color="orange.600">
+                          For everyone
+                        </Text>
+                      </VStack>
+                    </HStack>
+                    <Text fontSize="sm" color="gray.700" lineHeight="1.6">
+                      Designed with accessibility in mind. Works with screen readers, keyboard navigation, and large touch targets.
+                    </Text>
+                  </VStack>
+                </Box>
+              </SimpleGrid>
+            </VStack>
+          </Box>
+
+          {/* Important Information - Enhanced */}
           <Box
-            bg="accent.orange.100"
+            bg="gradient-to-br"
+            bgGradient="linear(to-br, orange.50, yellow.50)"
             border="2px solid"
-            borderColor="accent.orange.200"
-            borderRadius="xl"
-            p={6}
-            mb={6}
+            borderColor="orange.200"
+            borderRadius="2xl"
+            p={{ base: 6, md: 8 }}
+            mb={8}
             position="relative"
             maxW={{ base: "100%", md: "800px" }}
             mx="auto"
+            boxShadow="md"
           >
-            <Box position="absolute" top={3} right={3} fontSize="xl">⚠️</Box>
-            <VStack spacing={4} align="center">
-              <Text fontWeight="600" fontSize="lg" color="accent.orange.500" textAlign="center">
-                Important Information
-              </Text>
-              <VStack spacing={3} align="center" fontSize="sm" color="gray.700">
-                <Text textAlign="center">• We are experiencing high volume - please arrive on time</Text>
-                <Text textAlign="center">• If you need to reschedule, call <strong>250-763-7161</strong></Text>
-                <Text textAlign="center">• Questions? Email us at <strong>info@cofoodbank.com</strong></Text>
+            <VStack spacing={5} align="center">
+              <HStack spacing={3} align="center" color="orange.600">
+                <Icon as={FiInfo} boxSize={6} />
+                <Text fontWeight="700" fontSize="xl" color="orange.700" textAlign="center">
+                  Important Information
+                </Text>
+              </HStack>
+              
+              <Divider borderColor="orange.200" />
+              
+              <VStack spacing={4} align="stretch" w="full" maxW="600px">
+                <HStack spacing={3} align="start">
+                  <Box
+                    bg="orange.100"
+                    borderRadius="full"
+                    p={2}
+                    mt={1}
+                    flexShrink={0}
+                  >
+                    <Text fontSize="sm">⏰</Text>
+                  </Box>
+                  <Box flex={1}>
+                    <Text fontWeight="600" fontSize="sm" color="gray.800" mb={1}>
+                      Arrival Time
+                    </Text>
+                    <Text fontSize="sm" color="gray.700" lineHeight="1.6">
+                      Please arrive on time for your scheduled appointment. We experience high volume and appreciate your punctuality.
+                    </Text>
+                  </Box>
+                </HStack>
+                
+                <HStack spacing={3} align="start">
+                  <Box
+                    bg="orange.100"
+                    borderRadius="full"
+                    p={2}
+                    mt={1}
+                    flexShrink={0}
+                  >
+                    <Text fontSize="sm">📞</Text>
+                  </Box>
+                  <Box flex={1}>
+                    <Text fontWeight="600" fontSize="sm" color="gray.800" mb={1}>
+                      Need to Reschedule?
+                    </Text>
+                    <Text fontSize="sm" color="gray.700" lineHeight="1.6">
+                      If you need to change your appointment time, please contact us in advance. We're here to help.
+                    </Text>
+                  </Box>
+                </HStack>
+                
+                <HStack spacing={3} align="start">
+                  <Box
+                    bg="orange.100"
+                    borderRadius="full"
+                    p={2}
+                    mt={1}
+                    flexShrink={0}
+                  >
+                    <Text fontSize="sm">✅</Text>
+                  </Box>
+                  <Box flex={1}>
+                    <Text fontWeight="600" fontSize="sm" color="gray.800" mb={1}>
+                      What to Bring
+                    </Text>
+                    <Text fontSize="sm" color="gray.700" lineHeight="1.6">
+                      Please bring a valid ID and be ready to provide your appointment confirmation when you arrive.
+                    </Text>
+                  </Box>
+                </HStack>
               </VStack>
+            </VStack>
+          </Box>
+
+          {/* Check-In Summary Card */}
+          <Box
+            bg="gray.50"
+            border="1px solid"
+            borderColor="gray.200"
+            borderRadius="xl"
+            p={{ base: 5, md: 6 }}
+            mb={6}
+            maxW={{ base: "100%", md: "700px" }}
+            mx="auto"
+          >
+            <VStack spacing={4} align="stretch">
+              <HStack spacing={2} align="center" color="gray.700">
+                <Icon as={FiCheckCircle} boxSize={5} color="green.500" />
+                <Text fontWeight="600" fontSize="md" color="gray.800">
+                  Check-In Summary
+                </Text>
+              </HStack>
+              
+              <Divider borderColor="gray.300" />
+              
+              <SimpleGrid columns={{ base: 1, sm: 2 }} spacing={4}>
+                <Box>
+                  <Text fontSize="xs" color="gray.600" mb={1} textTransform="uppercase" letterSpacing="wide">
+                    Current Visit
+                  </Text>
+                  <Text fontSize="sm" fontWeight="600" color="gray.800">
+                    ✓ Check-in Complete
+                  </Text>
+                </Box>
+                
+                <Box>
+                  <Text fontSize="xs" color="gray.600" mb={1} textTransform="uppercase" letterSpacing="wide">
+                    Next Appointment
+                  </Text>
+                  <Text fontSize="sm" fontWeight="600" color="gray.800">
+                    {nextAppointment ? `${nextAppointment.formattedDate} at ${nextAppointment.time}` : 'Loading...'}
+                  </Text>
+                </Box>
+              </SimpleGrid>
             </VStack>
           </Box>
 
           {/* Action Buttons */}
           <Stack
-            spacing={{ base: 4, md: 3 }}
+            spacing={{ base: 4, md: 4 }}
             direction={{ base: "column", md: "row" }}
             width="full"
-            pt={{ base: 4, md: 2 }}
+            pt={{ base: 2, md: 4 }}
             justify="center"
             align="center"
-            mt={{ base: 2, md: 1 }}
+            mt={{ base: 2, md: 4 }}
+            maxW={{ base: "100%", md: "700px" }}
+            mx="auto"
           >
             <AssistanceButton 
-              width={{ base: "100%", md: "320px" }}
-              height={{ base: "48px", md: "52px" }}
-              fontSize={{ base: "md", md: "md" }}
+              width={{ base: "100%", md: "240px" }}
+              height={{ base: "48px", md: "48px" }}
+              fontSize="md"
             />
             <PrimaryButton
               onClick={handleSubmit}
-              width={{ base: "100%", md: "320px" }}
-              height={{ base: "48px", md: "52px" }}
-              fontSize={{ base: "md", md: "md" }}
+              width={{ base: "100%", md: "240px" }}
+              height={{ base: "48px", md: "48px" }}
+              fontSize="md"
             >
               {t('common.continue')}
             </PrimaryButton>
           </Stack>
         </Box>
       </VStack>
-
-
+      
+      {/* Reschedule Modal */}
+      <Modal isOpen={isRescheduleOpen} onClose={onRescheduleClose} size="md">
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Reschedule Appointment</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            <VStack spacing={4} align="stretch">
+              <Text fontSize="sm" color="gray.600">
+                Please select a new date and time for your appointment. Appointments must be at least 21 days from today and available Monday through Friday.
+              </Text>
+              
+              <FormControl isRequired>
+                <FormLabel>New Appointment Date</FormLabel>
+                <Input
+                  type="date"
+                  value={rescheduleDate}
+                  onChange={(e) => setRescheduleDate(e.target.value)}
+                  min={getMinDate()}
+                  size="lg"
+                />
+              </FormControl>
+              
+              <FormControl isRequired>
+                <FormLabel>New Appointment Time</FormLabel>
+                <Select
+                  value={rescheduleTime}
+                  onChange={(e) => setRescheduleTime(e.target.value)}
+                  size="lg"
+                >
+                  {validTimes.map((time) => {
+                    const [hours, minutes] = time.split(':');
+                    const hour24 = parseInt(hours);
+                    const hour12 = hour24 > 12 ? hour24 - 12 : (hour24 === 0 ? 12 : hour24);
+                    const ampm = hour24 >= 12 ? 'PM' : 'AM';
+                    const displayTime = `${hour12}:${minutes} ${ampm}`;
+                    return (
+                      <option key={time} value={time}>
+                        {displayTime}
+                      </option>
+                    );
+                  })}
+                </Select>
+              </FormControl>
+              
+              {rescheduleDate && (
+                <Box
+                  bg="blue.50"
+                  border="1px solid"
+                  borderColor="blue.200"
+                  borderRadius="md"
+                  p={3}
+                >
+                  <Text fontSize="sm" color="blue.700">
+                    <strong>New Appointment:</strong> {new Date(rescheduleDate).toLocaleDateString('en-US', {
+                      weekday: 'long',
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric'
+                    })} at {(() => {
+                      const [hours, minutes] = rescheduleTime.split(':');
+                      const hour24 = parseInt(hours);
+                      const hour12 = hour24 > 12 ? hour24 - 12 : (hour24 === 0 ? 12 : hour24);
+                      const ampm = hour24 >= 12 ? 'PM' : 'AM';
+                      return `${hour12}:${minutes} ${ampm}`;
+                    })()}
+                  </Text>
+                </Box>
+              )}
+            </VStack>
+          </ModalBody>
+          
+          <ModalFooter>
+            <Button variant="ghost" mr={3} onClick={onRescheduleClose}>
+              Cancel
+            </Button>
+            <Button
+              colorScheme="green"
+              onClick={handleReschedule}
+              isLoading={isRescheduling}
+              loadingText="Rescheduling..."
+            >
+              Confirm Reschedule
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
     </PageLayout>
   );
 };

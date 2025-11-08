@@ -5,12 +5,19 @@
  * initial check-in processing, status updates, and appointment management.
  * It handles the core functionality of the food bank check-in system.
  * 
+ * Best Practices:
+ * - Rate limiting applied at server level (200 req/15min per IP)
+ * - Public endpoints for client check-in (no auth required)
+ * - Admin endpoints protected by authentication middleware
+ * - Frontend should implement smart polling (30-120s intervals, Page Visibility API)
+ * 
  * @author Lindsey D. Stead
  * @version 1.0.0
  * @since 2025-10-20
  * @license Proprietary - see LICENSE file for details
  * 
  * @see {@link ../controllers/checkInController.ts} Check-in controller implementation
+ * @see {@link https://developer.mozilla.org/en-US/docs/Web/API/Page_Visibility_API} Page Visibility API
  */
 
 import { Router } from 'express';
@@ -75,6 +82,12 @@ router.post('/admin', CheckInController.createManualCheckIn);
  * PUT /api/checkin/:id/status
  */
 router.put('/:id/status', CheckInController.updateCheckInStatus);
+
+/**
+ * Client reschedule appointment
+ * PUT /api/checkin/:checkInId/reschedule
+ */
+router.put('/:checkInId/reschedule', CheckInController.rescheduleAppointment);
 
 /**
  * Get check-in by ID

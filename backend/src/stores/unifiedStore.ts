@@ -247,6 +247,7 @@ export const storeCSVData = (csvRecords: any[], importId: string): { total: numb
         childrensAges: record.childrensAges,
         itemsProvided: record.itemsProvided,
         pickUpDate: record.pickUpDate,
+        pickUpTime: record.pickUpTime, // HH:MM format from CSV (e.g., "09:00", "14:30")
         pickUpISO: record.pickUpISO,
         provisions: record.provisions,
         quantity: record.quantity,

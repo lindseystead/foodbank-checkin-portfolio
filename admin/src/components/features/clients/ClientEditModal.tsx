@@ -1,3 +1,17 @@
+/**
+ * @fileoverview Client edit modal component for Foodbank Check-In and Appointment System admin panel
+ * 
+ * This component provides a modal interface for editing client information,
+ * including personal details, household information, and appointment data.
+ * 
+ * @author Lindsey D. Stead
+ * @version 1.0.0
+ * @since 2025-10-20
+ * @license Proprietary - see LICENSE file for details
+ * 
+ * @see {@link ../ClientDetailPage.tsx} Client detail page
+ */
+
 import React, { useState, useEffect } from 'react';
 import {
   Modal,
@@ -55,7 +69,6 @@ const ClientEditModal: React.FC<ClientEditModalProps> = ({
   const [tempData, setTempData] = useState<any>(null);
   const toast = useToast();
 
-  // Initialize form data when client changes
   useEffect(() => {
     if (client) {
       setFormData({
@@ -125,13 +138,13 @@ const ClientEditModal: React.FC<ClientEditModalProps> = ({
         onSave(result.client);
         toast({
           title: 'Changes Saved',
-          description: 'Client data updated in temporary memory',
+          description: 'Client information has been updated successfully. Changes are saved temporarily until you confirm them permanently.',
           status: 'success',
-          duration: 3000,
+          duration: 4000,
           isClosable: true,
         });
         setHasChanges(false);
-        loadTempData(); // Reload temp data
+        loadTempData();
       } else {
         const errorData = await response.json();
         setError(errorData.error || 'Failed to save changes');
@@ -155,7 +168,6 @@ const ClientEditModal: React.FC<ClientEditModalProps> = ({
       if (response.ok) {
         setTempData(null);
         setHasChanges(false);
-        // Reset form to original data
         setFormData({
           firstName: client.firstName || '',
           lastName: client.lastName || '',
@@ -171,9 +183,9 @@ const ClientEditModal: React.FC<ClientEditModalProps> = ({
         });
         toast({
           title: 'Changes Discarded',
-          description: 'Temporary changes have been discarded',
+          description: 'All temporary changes have been discarded. The client information has been restored to the original values.',
           status: 'info',
-          duration: 3000,
+          duration: 4000,
           isClosable: true,
         });
       }
@@ -196,9 +208,9 @@ const ClientEditModal: React.FC<ClientEditModalProps> = ({
         const result = await response.json();
         toast({
           title: 'Changes Saved Permanently',
-          description: result.message,
+          description: result.message || 'Client information has been saved permanently to the system.',
           status: 'success',
-          duration: 3000,
+          duration: 4000,
           isClosable: true,
         });
         setHasChanges(false);

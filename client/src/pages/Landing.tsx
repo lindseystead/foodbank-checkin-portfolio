@@ -1,34 +1,16 @@
 /**
- * Landing.tsx
- * ----------
- * This is the main landing page for the Foodbank Check-In and Appointment System check-in application.
- * It serves as the entry point for clients and handles language selection.
- *
- * Main Features:
+ * @fileoverview Landing page for Foodbank Check-In and Appointment System client application
+ * 
+ * This is the main entry point for clients accessing the food bank check-in system.
+ * It provides language selection, welcome information, and navigation to the check-in process.
+ * 
+ * Features:
  * - Language selection with persistent storage
  * - Welcome message and introduction
  * - Navigation to check-in flow
  * - Responsive, accessible Chakra UI layout
  * - Form validation for language selection
- * - Responsive design for mobile and desktop views
  * - Toast notifications for validation feedback
- *
- * Layout Structure:
- * - Full-width container with responsive max-width
- * - Centered content with responsive spacing
- * - Language selector component
- * - Continue button with responsive sizing
- *
- * Author: Lindsey Stead
- * Date: 2025-08-25
- */
-
-/**
- * @fileoverview Landing page for Foodbank Check-In and Appointment System client application
- * 
- * This is the main entry point for clients accessing the food bank
- * check-in system. It provides language selection, welcome information,
- * and navigation to the check-in process.
  * 
  * @author Lindsey D. Stead
  * @version 1.0.0
@@ -49,25 +31,18 @@ import PrimaryButton from '../components/buttons/PrimaryButton';
 import { useLanguageSelection } from '../hooks/useLanguageSelection';
 
 const Landing: React.FC = () => {
-  // Initialize hooks for navigation, translation, and toast notifications
   const navigate = useNavigate();
   const { t } = useTranslation();
   const toast = useToast();
-  
-  // Get language selection state and handler from custom hook
   const { selectedLanguage, handleLanguageSelect } = useLanguageSelection();
 
-  /**
-   * Handles the continue button click event
-   * Validates language selection and navigates to initial check-in
-   * Shows warning toast if no language is selected
-   */
+  // Continue to check-in (make sure language is selected)
   const handleContinue = () => {
     if (!selectedLanguage) {
       toast({
         title: t('language.selectRequired'),
         status: 'warning',
-        duration: 5000,
+        duration: 6000,
         isClosable: true,
         position: 'bottom',
         variant: 'subtle',
@@ -89,7 +64,6 @@ const Landing: React.FC = () => {
 
   return (
     <PageLayout showBackButton={false} isScrollable={false}>
-      {/* Main content container with responsive spacing and sizing */}
       <VStack 
         spacing={{ base: 4, md: 8 }} 
         width="full" 
@@ -101,7 +75,6 @@ const Landing: React.FC = () => {
         mt={{ base: 8, md: 12 }}
         pt={0}
       >
-        {/* Header and language selector container */}
         <Box 
           width="full"
           mb={{ base: 3, md: 4 }}
@@ -114,14 +87,12 @@ const Landing: React.FC = () => {
             mb={3}
           />
 
-          {/* Language selection component */}
           <LanguageSelector
             onLanguageSelect={handleLanguageSelect}
             currentLanguage={selectedLanguage}
           />
         </Box>
 
-        {/* Continue button container with responsive positioning */}
         <Box 
           width="full" 
           display="flex"
@@ -136,12 +107,9 @@ const Landing: React.FC = () => {
         >
           <PrimaryButton
             onClick={handleContinue}
-            size="lg"
-            width={{ base: "160px", sm: "180px", md: "240px" }}
+            width={{ base: "100%", md: "240px" }}
             height={{ base: "48px", md: "48px" }}
-            fontSize={{ base: "md", md: "md" }}
-            px={{ base: 6, md: 6 }}
-            maxW={{ base: "180px", md: "240px" }}
+            fontSize="md"
           >
             {t('common.continue')}
           </PrimaryButton>

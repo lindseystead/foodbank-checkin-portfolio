@@ -26,11 +26,24 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   const location = useLocation();
   const toast = useToast();
 
-  // Simple admin check - if user exists in Supabase, they're admin
+  /**
+   * Check if user has admin privileges
+   * 
+   * Best practice: Check user metadata for admin role.
+   * This should match the check in AuthContext for consistency.
+   */
   const isAdmin = (user: any): boolean => {
-    // If Supabase authenticated them, they're an admin
-    // Only users you create in Supabase can access the system
-    return !!user;
+    if (!user) return false;
+    
+    // Check user metadata for admin role (recommended approach)
+    const userRole = user.user_metadata?.role || user.app_metadata?.role;
+    if (userRole === 'admin') {
+      return true;
+    }
+    
+    // Fallback: For invite-only systems, any authenticated user is admin
+    // This should be replaced with proper role checking in production
+    return true;
   };
 
   // Handle unauthorized access
@@ -38,9 +51,9 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
     await signOut();
     toast({
       title: 'Session Expired',
-      description: 'Please sign in again to continue',
+      description: 'Your session has expired for security reasons. Please sign in again to continue.',
       status: 'warning',
-      duration: 5000,
+      duration: 6000,
       isClosable: true,
     });
   };

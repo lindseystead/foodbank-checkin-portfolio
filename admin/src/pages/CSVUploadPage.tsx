@@ -32,6 +32,14 @@ import {
   Wrap,
   WrapItem,
   Divider,
+  useDisclosure,
+  useToast,
+  AlertDialog,
+  AlertDialogBody,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogContent,
+  AlertDialogOverlay,
 } from '@chakra-ui/react';
 import { 
   FiInfo, 
@@ -59,6 +67,9 @@ const CSVUploadPage: React.FC = () => {
   const [status, setStatus] = useState<DayStatus | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { isOpen: isClearOpen, onOpen: onClearOpen, onClose: onClearClose } = useDisclosure();
+  const cancelRef = React.useRef<HTMLButtonElement>(null);
+  const toast = useToast();
 
   useEffect(() => {
     fetchStatus();
@@ -128,22 +139,12 @@ const CSVUploadPage: React.FC = () => {
   };
 
   const handleClearAllData = async () => {
-    // Show confirmation dialog
-    const confirmed = window.confirm(
-      '⚠️ WARNING: This will permanently delete ALL data from the system!\n\n' +
-      'This includes:\n' +
-      '• All client data\n' +
-      '• All appointment data\n' +
-      '• All check-in records\n' +
-      '• All CSV uploads\n\n' +
-      'This action cannot be undone!\n\n' +
-      'Are you sure you want to continue?'
-    );
+    onClearOpen();
+  };
 
-    if (!confirmed) {
-      return;
-    }
-
+  const confirmClearData = async () => {
+    onClearClose();
+    
     try {
       const result = await clearAllData();
       
@@ -173,19 +174,37 @@ const CSVUploadPage: React.FC = () => {
           }
         });
         
-        // Show success message
-        alert('✅ All data has been cleared successfully!\n\nThe page will refresh to complete the process.');
+        // Show success toast
+        toast({
+          title: 'Data Cleared Successfully',
+          description: 'All operational data has been cleared. The page will refresh automatically.',
+          status: 'success',
+          duration: 4000,
+          isClosable: true,
+        });
         
         // Refresh the page to clear all data
         setTimeout(() => {
           window.location.reload();
-        }, 1000);
+        }, 1500);
       } else {
-        alert(`❌ Failed to clear data: ${result.error || 'Unknown error'}`);
+        toast({
+          title: 'Clear Failed',
+          description: result.error || 'Unable to clear data. Please try again or contact technical support.',
+          status: 'error',
+          duration: 6000,
+          isClosable: true,
+        });
       }
     } catch (error) {
       console.error('Clear data error:', error);
-      alert(`❌ Failed to clear data: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      toast({
+        title: 'Clear Failed',
+        description: error instanceof Error ? error.message : 'Unable to clear data. Please try again or contact technical support.',
+        status: 'error',
+        duration: 6000,
+        isClosable: true,
+      });
     }
   };
 
@@ -612,8 +631,57 @@ const CSVUploadPage: React.FC = () => {
           </Box>
         </Box>
       </Grid>
+
+      {/* Clear Data Confirmation Dialog */}
+      <AlertDialog
+        isOpen={isClearOpen}
+        leastDestructiveRef={cancelRef}
+        onClose={onClearClose}
+      >
+        <AlertDialogOverlay>
+          <AlertDialogContent>
+            <AlertDialogHeader fontSize="lg" fontWeight="bold" color="red.600">
+              Clear All Data
+            </AlertDialogHeader>
+            <AlertDialogBody>
+              <VStack align="stretch" spacing={3}>
+                <Text>
+                  <strong>Warning:</strong> This action will permanently delete all operational data from the system.
+                </Text>
+                <Text fontSize="sm" color="gray.600">
+                  This includes:
+                </Text>
+                <Box pl={4}>
+                  <Text fontSize="sm">• All client data</Text>
+                  <Text fontSize="sm">• All appointment data</Text>
+                  <Text fontSize="sm">• All check-in records</Text>
+                  <Text fontSize="sm">• All CSV uploads</Text>
+                </Box>
+                <Alert status="warning" borderRadius="md" mt={2}>
+                  <AlertIcon />
+                  <Text fontSize="sm">
+                    This action cannot be undone. Your authentication session will be preserved.
+                  </Text>
+                </Alert>
+                <Text fontSize="sm" color="gray.600">
+                  Are you sure you want to continue?
+                </Text>
+              </VStack>
+            </AlertDialogBody>
+            <AlertDialogFooter>
+              <Button ref={cancelRef} onClick={onClearClose}>
+                Cancel
+              </Button>
+              <Button colorScheme="red" onClick={confirmClearData} ml={3}>
+                Clear All Data
+              </Button>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialogOverlay>
+      </AlertDialog>
     </VStack>
   );
 };
 
 export default CSVUploadPage;
+

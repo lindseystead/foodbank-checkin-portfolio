@@ -1,46 +1,16 @@
 /**
- * ProgressSteps.tsx
- * ----------------
- * A reusable progress indicator component that displays the current step in a multi-step process.
- * Used throughout the application to show progress in the check-in flow.
- *
- * Main Features:
+ * @fileoverview Progress steps component for Foodbank Check-In and Appointment System client application
+ * 
+ * This component displays the current step in the check-in process with visual
+ * progress indicators and step labels. It provides clear navigation context
+ * for users throughout the multi-step check-in flow.
+ * 
+ * Features:
  * - Visual step indicators with numbers and checkmarks
  * - Progress line connecting steps
  * - Responsive design for mobile and desktop
- * - Color mode support (light/dark)
- * - Customizable labels and step count
  * - Active, completed, and pending states
- *
- * Components:
- * 1. Step:
- *    - Individual step indicator
- *    - Circle with number or checkmark
- *    - Step label
- *    - Progress line connector
- *
- * 2. ProgressSteps:
- *    - Container for all steps
- *    - Manages step state and layout
- *    - Handles responsive spacing
- *
- * Props:
- * - currentStep: Current active step number
- * - totalSteps: Total number of steps
- * - labels: Array of step labels
- *
- * Author: Lindsey Stead
- * Date: 2025-08-25
- */
-
-
-
-/**
- * @fileoverview Progress steps component for Foodbank Check-In and Appointment System client application
- * 
- * This component displays the current step in the check-in process
- * with visual progress indicators and step labels. It provides
- * clear navigation context for users throughout the flow.
+ * - Internationalized step labels
  * 
  * @author Lindsey D. Stead
  * @version 1.0.0

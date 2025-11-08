@@ -21,10 +21,17 @@ interface PrimaryButtonProps extends ButtonProps {
   children: React.ReactNode;
 }
 
-const PrimaryButton: React.FC<PrimaryButtonProps> = ({ children, ...props }) => {
+const PrimaryButton: React.FC<PrimaryButtonProps> = ({ children, width, height, ...props }) => {
+  // IMPORTANT: Override variant defaults to ensure props take precedence
+  // If width is provided, set minW to match to prevent variant minW from overriding
+  const minW = width ? (typeof width === 'object' ? width : { base: width, md: width }) : undefined;
+  
   return (
     <Button
       variant="primary"
+      width={width}
+      height={height}
+      minW={minW}
       {...props}
     >
       <HStack spacing={2} justify="center" width="100%">

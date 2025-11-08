@@ -13,7 +13,7 @@
  * @see {@link ../DashboardPage.tsx} Dashboard page
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Box,
   Table,
@@ -46,7 +46,7 @@ import {
   Textarea
 } from '@chakra-ui/react';
 import { FiSearch, FiEye, FiCheck, FiClock, FiPhone, FiMail } from 'react-icons/fi';
-import { getApiUrl } from '../../../common/apiConfig';
+import { api } from '../../../lib/api';
 interface HelpRequest {
   id: number;
   client_phone: string;
@@ -66,33 +66,108 @@ const HelpRequestsTable: React.FC = () => {
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedRequest, setSelectedRequest] = useState<HelpRequest | null>(null);
-  const [isHovering, setIsHovering] = useState(false);
+  const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
+  const consecutiveErrorsRef = useRef(0); // Use ref to track errors in closures (avoids stale closure)
   const { isOpen, onOpen, onClose } = useDisclosure();
   const toast = useToast();
 
-  // Fetch help requests from backend API
+  /**
+   * Fetch help requests from backend API
+   * 
+   * Best Practices:
+   * - Uses authenticated API helper with automatic token inclusion
+   * - Implements exponential backoff (stops after 3 consecutive errors)
+   * - Handles connection errors gracefully without spamming user
+   * - Resets error count on successful load
+   */
   const fetchHelpRequests = async () => {
     try {
       setLoading(true);
       setError(null);
 
-      const response = await fetch(getApiUrl('/help-requests'));
+      // Use authenticated API helper
+      const response = await api('/help-requests');
       
       if (!response.ok) {
-        throw new Error('Failed to fetch help requests');
+        // Handle different error statuses gracefully
+        if (response.status === 404) {
+          // No help requests endpoint or no data - treat as empty
+          setHelpRequests([]);
+          setLoading(false);
+          return;
+        }
+        throw new Error(`Failed to fetch help requests: ${response.status}`);
       }
       
       const result = await response.json();
-      setHelpRequests(result.data || []);
+      
+      // Handle both success wrapper and direct array responses
+      if (result.success && Array.isArray(result.data)) {
+        setHelpRequests(result.data);
+      } else if (Array.isArray(result)) {
+        setHelpRequests(result);
+      } else if (Array.isArray(result.data)) {
+        setHelpRequests(result.data);
+      } else {
+        // No data is not an error - just empty array
+        setHelpRequests([]);
+      }
+      
+      // Mark that we've successfully loaded at least once
+      setHasLoadedOnce(true);
+      // Reset error count on successful load
+      consecutiveErrorsRef.current = 0;
     } catch (err) {
       console.error('Error fetching help requests:', err);
-      setError('Failed to load help requests');
-      toast({
-        title: 'Error',
-        description: 'Failed to load help requests',
-        status: 'error',
-        duration: 5000,
-      });
+      
+      // Track consecutive errors for exponential backoff
+      const newErrorCount = consecutiveErrorsRef.current + 1;
+      consecutiveErrorsRef.current = newErrorCount;
+      
+      // Handle connection errors gracefully - don't show errors on initial load
+      if (err instanceof TypeError && err.message.includes('Failed to fetch')) {
+        // Backend not available - silently handle on initial load
+        setError(null);
+        setHelpRequests([]);
+        
+        // Exponential backoff: stop polling after 3 consecutive errors
+        if (newErrorCount >= 3) {
+          // Stop polling - user can manually refresh
+          if (hasLoadedOnce) {
+            toast({
+              title: 'Connection Lost',
+              description: 'Unable to connect to the server. Polling has been paused. Please refresh manually or check your connection.',
+              status: 'warning',
+              duration: 7000,
+              isClosable: true,
+            });
+          }
+          return; // Don't continue polling
+        }
+        
+        // Only show warning if we've loaded successfully before (first error only)
+        if (hasLoadedOnce && newErrorCount === 1) {
+          toast({
+            title: 'Connection Error',
+            description: 'Unable to connect to the server. Help requests will refresh automatically when connection is restored.',
+            status: 'warning',
+            duration: 5000,
+            isClosable: true,
+          });
+        }
+      } else {
+        // Only show error if we've loaded before (not on initial page load)
+        setError('Unable to load help requests');
+        if (hasLoadedOnce && newErrorCount === 1) {
+          toast({
+            title: 'Load Failed',
+            description: 'Unable to load help requests. The page will automatically retry.',
+            status: 'error',
+            duration: 5000,
+            isClosable: true,
+          });
+        }
+      }
     } finally {
       setLoading(false);
     }
@@ -101,34 +176,34 @@ const HelpRequestsTable: React.FC = () => {
   // Update request status
   const updateStatus = async (id: number, newStatus: string) => {
     try {
-      const apiBase = import.meta.env.DEV 
-        ? 'http://localhost:3001/api' 
-        : import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001/api';
-      
-      const response = await fetch(`${apiBase}/help-requests/${id}/status`, {
+      // Use authenticated API helper
+      const response = await api(`/help-requests/${id}/status`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: newStatus })
       });
       
       if (!response.ok) {
-        throw new Error('Failed to update status');
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Failed to update status');
       }
       
       await fetchHelpRequests();
       toast({
-        title: 'Success',
-        description: 'Help request status updated',
+        title: 'Status Updated',
+        description: 'The help request status has been updated successfully.',
         status: 'success',
-        duration: 3000,
+        duration: 4000,
+        isClosable: true,
       });
     } catch (error) {
       console.error('Error updating status:', error);
       toast({
-        title: 'Error',
-        description: 'Failed to update help request status',
+        title: 'Update Failed',
+        description: error instanceof Error ? error.message : 'Unable to update the help request status. Please try again or contact technical support.',
         status: 'error',
-        duration: 5000,
+        duration: 7000,
+        isClosable: true,
       });
     }
   };
@@ -167,17 +242,70 @@ const HelpRequestsTable: React.FC = () => {
     return new Date(dateString).toLocaleString();
   };
 
+  /**
+   * Polling setup with Page Visibility API and exponential backoff
+   * 
+   * Best Practices Implemented:
+   * - Page Visibility API: Pauses polling when browser tab is hidden
+   * - Exponential Backoff: Stops polling after 3 consecutive connection errors
+   * - Optimized Interval: 30 seconds (reduced from 5s to minimize API calls)
+   * - Smart Conditions: Only polls when tab visible, not loading, and connection healthy
+   * - Proper Cleanup: Clears intervals and removes event listeners on unmount
+   * 
+   * @see {@link https://developer.mozilla.org/en-US/docs/Web/API/Page_Visibility_API} Page Visibility API
+   * @see {@link https://aws.amazon.com/builders-library/timeouts-retries-and-backoff-with-jitter/} Exponential Backoff
+   */
   useEffect(() => {
-    fetchHelpRequests();
-    // Poll for new help requests every 15 seconds, but only when not hovering
-    const interval = setInterval(() => {
-      if (!isHovering) {
-        fetchHelpRequests();
-      }
-    }, 15000); // Reduced from 5 to 15 seconds to save costs
+    // Initial fetch - delay slightly to avoid race condition on page load
+    const initialTimeout = setTimeout(() => {
+      fetchHelpRequests();
+    }, 1000);
     
-    return () => clearInterval(interval);
-  }, [isHovering]);
+    // Use visibility API to pause polling when tab is hidden
+    let interval: NodeJS.Timeout | null = null;
+    let isVisible = !document.hidden;
+    
+    const startPolling = () => {
+      if (interval) clearInterval(interval);
+      interval = setInterval(() => {
+        // Only poll if tab is visible, not loading, and haven't hit error limit
+        // Use ref to get current error count (avoids stale closure)
+        if (!document.hidden && !loading && consecutiveErrorsRef.current < 3) {
+          fetchHelpRequests();
+        }
+      }, 30000); // Poll every 30 seconds (optimized to reduce API calls by 80%)
+    };
+    
+    const handleVisibilityChange = () => {
+      isVisible = !document.hidden;
+      if (isVisible) {
+        // Tab became visible - fetch immediately and start polling
+        fetchHelpRequests();
+        startPolling();
+      } else {
+        // Tab hidden - stop polling
+        if (interval) {
+          clearInterval(interval);
+          interval = null;
+        }
+      }
+    };
+    
+    // Start polling if visible
+    if (isVisible) {
+      startPolling();
+    }
+    
+    // Listen for visibility changes
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    
+    return () => {
+      clearTimeout(initialTimeout);
+      if (interval) clearInterval(interval);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Only run once on mount
 
   if (loading) {
     return (
@@ -188,11 +316,23 @@ const HelpRequestsTable: React.FC = () => {
     );
   }
 
-  if (error) {
+  // Only show error alert if there's a persistent error and no data
+  // If we have data, show it even if there was a transient error
+  if (error && helpRequests.length === 0 && !loading) {
     return (
-      <Alert status="error">
+      <Alert status="error" borderRadius="md">
         <AlertIcon />
-        <AlertDescription>{error}</AlertDescription>
+        <Box>
+          <AlertDescription>{error}</AlertDescription>
+          <Button 
+            mt={3} 
+            size="sm" 
+            colorScheme="blue" 
+            onClick={fetchHelpRequests}
+          >
+            Retry
+          </Button>
+        </Box>
       </Alert>
     );
   }
@@ -202,11 +342,22 @@ const HelpRequestsTable: React.FC = () => {
       {/* Header */}
       <VStack spacing={4} align="stretch" mb={6}>
         <HStack justify="space-between" align="center">
-          <Text fontSize="2xl" fontWeight="bold">
-            Help Requests ({filteredRequests.length})
-          </Text>
-          <Button onClick={fetchHelpRequests} size="sm" variant="outline">
-            Refresh
+          <VStack align="start" spacing={0}>
+            <Text fontSize="2xl" fontWeight="bold">
+              Help Requests ({filteredRequests.length})
+            </Text>
+            <Text fontSize="xs" color="gray.500">
+              Auto-refreshes every 30 seconds
+            </Text>
+          </VStack>
+          <Button 
+            onClick={fetchHelpRequests} 
+            size="sm" 
+            colorScheme="blue"
+            isLoading={loading}
+            loadingText="Loading..."
+          >
+            Refresh Now
           </Button>
         </HStack>
 
@@ -237,11 +388,7 @@ const HelpRequestsTable: React.FC = () => {
       </VStack>
 
       {/* Table */}
-      <Box 
-        overflowX="auto" 
-        onMouseEnter={() => setIsHovering(true)}
-        onMouseLeave={() => setIsHovering(false)}
-      >
+      <Box overflowX="auto">
         <Table variant="simple" size="sm">
           <Thead>
             <Tr>

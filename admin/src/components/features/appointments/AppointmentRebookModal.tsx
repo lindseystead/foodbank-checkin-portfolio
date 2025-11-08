@@ -58,10 +58,10 @@ const AppointmentRebookModal: React.FC<AppointmentRebookModalProps> = ({
   const handleSubmit = async () => {
     if (!newDate) {
       toast({
-        title: 'Error',
-        description: 'Please select a new date',
+        title: 'Date Required',
+        description: 'Please select a new appointment date to reschedule.',
         status: 'error',
-        duration: 3000,
+        duration: 7000,
         isClosable: true,
       });
       return;
@@ -71,10 +71,10 @@ const AppointmentRebookModal: React.FC<AppointmentRebookModalProps> = ({
       const candidate = new Date(`${newDate}T${newTime || '10:00'}:00`);
       if (candidate.getTime() <= Date.now()) {
         toast({
-          title: 'Choose a future time',
-          description: 'Next appointment must be in the future.',
+          title: 'Invalid Date',
+          description: 'The appointment date must be in the future. Please select a date after today.',
           status: 'error',
-          duration: 3000,
+          duration: 7000,
           isClosable: true,
         });
         return;
@@ -83,7 +83,22 @@ const AppointmentRebookModal: React.FC<AppointmentRebookModalProps> = ({
 
     setIsLoading(true);
     try {
-      const response = await api(`/admin/appointments/${client.clientId}/update-next-date`, {
+      // IMPORTANT: Use checkInId (not clientId) to ensure we update the correct check-in record
+      // This ensures the update appears on tickets and throughout the app
+      const checkInId = client.id || client.checkInId;
+      if (!checkInId) {
+        toast({
+          title: 'Error',
+          description: 'Check-in ID is required to update appointment.',
+          status: 'error',
+          duration: 7000,
+          isClosable: true,
+        });
+        setIsLoading(false);
+        return;
+      }
+      
+      const response = await api(`/admin/appointments/${checkInId}/update-next-date`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -93,10 +108,10 @@ const AppointmentRebookModal: React.FC<AppointmentRebookModalProps> = ({
 
       if (response.ok) {
         toast({
-          title: 'Success',
-          description: 'Next appointment date updated successfully',
+          title: 'Appointment Rescheduled',
+          description: 'The client\'s next appointment has been successfully rescheduled.',
           status: 'success',
-          duration: 3000,
+          duration: 4000,
           isClosable: true,
         });
         
@@ -107,20 +122,20 @@ const AppointmentRebookModal: React.FC<AppointmentRebookModalProps> = ({
       } else {
         const error = await response.json();
         toast({
-          title: 'Error',
-          description: error.error || 'Failed to update appointment date',
+          title: 'Reschedule Failed',
+          description: error.error || 'Unable to reschedule the appointment. Please verify the date and time, then try again.',
           status: 'error',
-          duration: 5000,
+          duration: 7000,
           isClosable: true,
         });
       }
     } catch (error) {
       console.error('Update error:', error);
       toast({
-        title: 'Error',
-        description: 'Failed to update appointment date',
+        title: 'Connection Error',
+        description: 'Unable to connect to the server. Please check your internet connection and try again.',
         status: 'error',
-        duration: 5000,
+        duration: 7000,
         isClosable: true,
       });
     } finally {

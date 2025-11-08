@@ -36,20 +36,17 @@ const HeaderSystemStatus: React.FC = () => {
     csv: true,
   });
 
-  // Fetch system status
   useEffect(() => {
     const fetchStatus = async () => {
       try {
-        // Fetch Link2Feed status
         const response = await api('/link2feed/status');
         const data = await response.json();
         
         setStatus({
           link2Feed: data.success && data.data?.configured,
-          csv: true, // CSV is always available as fallback
+          csv: true,
         });
       } catch (error) {
-        // Backend not running - show default status
         console.log('Backend not available, using default status');
         setStatus({
           link2Feed: false,

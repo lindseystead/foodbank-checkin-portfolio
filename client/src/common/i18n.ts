@@ -2,15 +2,24 @@
  * @fileoverview Internationalization configuration for Foodbank Check-In and Appointment System client application
  * 
  * This module configures i18next for multilingual support including
- * English, Spanish, and French. It handles language detection,
- * resource loading, and translation management.
+ * 7 languages: English, Spanish, French, Chinese (Simplified), Hindi, Arabic, and Punjabi.
+ * It handles language detection, resource loading, and translation management.
+ * 
+ * Supported Languages:
+ * - en: English (default)
+ * - es: Español (Spanish)
+ * - fr: Français (French)
+ * - zh: 中文 (Chinese - Simplified)
+ * - hi: हिंदी (Hindi)
+ * - ar: العربية (Arabic)
+ * - pa: ਪੰਜਾਬੀ (Punjabi)
+ * 
+ * All translations are complete and consistent across all languages.
  * 
  * @author Lindsey D. Stead
  * @version 1.0.0
  * @since 2025-10-20
  * @license Proprietary - see LICENSE file for details
- * 
- * @see {@link ./i18n/languages/} Language resource files
  */
 
 import i18n from 'i18next';
@@ -365,7 +374,10 @@ const resources = {
         validationError: 'Error de Validación',
         validationErrorDescription: 'Por favor corrija los errores a continuación',
         checkInFailed: 'Cita No Encontrada',
-        tryAgain: 'Por favor intente de nuevo'
+        tryAgain: 'Por favor intente de nuevo',
+        checkingIn: 'Registrando...',
+        appointmentNotFoundTitle: 'Cita No Encontrada',
+        appointmentNotFoundDescription: 'Hubo un error al encontrar su cita. Por favor hable con un miembro del personal para obtener asistencia.'
       },
       validation: {
         error: 'Error del Formulario',
@@ -384,7 +396,15 @@ const resources = {
         emailPlaceholder: 'Ingrese su dirección de correo electrónico',
         phonePlaceholder: 'Ingrese su número de teléfono',
         reschedule: 'Reprogramar',
-        continue: 'Continuar'
+        continue: 'Continuar',
+        importantNotice: 'Aviso Importante',
+        highVolumeNotice: 'Debido a la alta demanda, por favor llegue a su hora programada. Las llegadas tempranas pueden ser solicitadas a regresar.',
+        rescheduleInstructions: 'Si necesita reprogramar, por favor hable con un miembro del personal.',
+        rescheduleButton: 'Reprogramar',
+        rescheduleModalTitle: 'Reprogramar Cita',
+        rescheduleModalCurrent: 'Cita Actual',
+        rescheduleModalInstructions: 'Seleccione una nueva fecha y hora para su cita.',
+        rescheduleModalCancel: 'Cancelar'
       },
       specialRequests: {
         title: 'Solicitudes Especiales',
@@ -588,7 +608,10 @@ const resources = {
         validationError: 'Erreur de Validation',
         validationErrorDescription: 'Veuillez corriger les erreurs ci-dessous',
         checkInFailed: 'Rendez-vous Non Trouvé',
-        tryAgain: 'Veuillez réessayer'
+        tryAgain: 'Veuillez réessayer',
+        checkingIn: 'Enregistrement...',
+        appointmentNotFoundTitle: 'Rendez-vous Non Trouvé',
+        appointmentNotFoundDescription: 'Une erreur s\'est produite lors de la recherche de votre rendez-vous. Veuillez parler à un membre du personnel pour obtenir de l\'aide.'
       },
       validation: {
         error: 'Erreur du Formulaire',
@@ -607,7 +630,15 @@ const resources = {
         emailPlaceholder: 'Entrez votre adresse email',
         phonePlaceholder: 'Entrez votre numéro de téléphone',
         reschedule: 'Reprogrammer',
-        continue: 'Continuer'
+        continue: 'Continuer',
+        importantNotice: 'Avis Important',
+        highVolumeNotice: 'En raison de la forte demande, veuillez arriver à l\'heure prévue. Les arrivées anticipées peuvent être invitées à revenir.',
+        rescheduleInstructions: 'Si vous devez reprogrammer, veuillez parler à un membre du personnel.',
+        rescheduleButton: 'Reprogrammer',
+        rescheduleModalTitle: 'Reprogrammer le Rendez-vous',
+        rescheduleModalCurrent: 'Rendez-vous Actuel',
+        rescheduleModalInstructions: 'Sélectionnez une nouvelle date et heure pour votre rendez-vous.',
+        rescheduleModalCancel: 'Annuler'
       },
       specialRequests: {
         title: 'Demandes Spéciales',
@@ -654,7 +685,23 @@ const resources = {
         subtitle: 'Merci de vous être enregistré. Vos informations ont été enregistrées.',
         appointmentDetails: 'Détails du Rendez-vous',
         specialRequests: 'Demandes Spéciales',
-        finish: 'Terminer'
+        finish: 'Terminer',
+        importantInfo: 'Informations Importantes',
+        arrivalInstructions: 'Veuillez arriver à l\'heure qui vous a été assignée. En raison de la forte demande, les arrivées anticipées peuvent être invitées à revenir.',
+        lateInstructions: 'En retard ? Veuillez parler à un membre du personnel à votre arrivée.',
+        yourPreferences: 'Vos Préférences',
+        dietaryPreferencesLabel: 'Préférences Alimentaires',
+        householdInformationLabel: 'Informations du Ménage',
+        assistanceLabel: 'Besoins d\'Assistance',
+        additionalNotesLabel: 'Notes Supplémentaires',
+        householdChangesNoted: 'Les changements dans le ménage ont été notés',
+        noHouseholdChanges: 'Aucun changement dans le ménage signalé',
+        mobilityAssistanceProvided: 'L\'assistance à la mobilité sera fournie',
+        noAssistanceNeeded: 'Aucune assistance spéciale nécessaire',
+        noAllergiesNoted: 'Aucune allergie notée',
+        noUnwantedFoodsNoted: 'Aucun aliment indésirable noté',
+        noSpecialRequests: 'Aucune demande spéciale',
+        contactInstructions: 'Si vous avez des questions ou devez apporter des modifications, veuillez parler à un membre du personnel.'
       },
       assistance: {
         title: 'Besoin d\'Aide ?',
@@ -666,6 +713,12 @@ const resources = {
         needAssistance: 'Besoin d\'Assistance ?',
         description: 'Si vous avez besoin d\'aide ou avez des questions, veuillez nous appeler directement.',
         callUs: 'Appelez-nous',
+        emailSubject: 'Demande d\'Assistance du Système de Pointage et de Rendez-vous de la Banque Alimentaire',
+        emailBody: 'Bonjour, j\'ai besoin d\'assistance avec mon enregistrement à la banque alimentaire. Veuillez m\'aider avec:',
+        phoneCopied: 'Message copié. Veuillez le montrer à un membre du personnel.',
+        phoneFallback: 'Veuillez parler à un membre du personnel pour obtenir de l\'assistance.',
+        emailCopied: 'Message copié. Veuillez le montrer à un membre du personnel.',
+        emailFallback: 'Veuillez parler à un membre du personnel pour obtenir de l\'assistance.',
         contactInfo: {
           phone: 'Téléphone',
           email: 'Email',
@@ -787,7 +840,10 @@ const resources = {
         validationError: '验证错误',
         validationErrorDescription: '请修复以下错误',
         checkInFailed: '未找到预约',
-        tryAgain: '请重试'
+        tryAgain: '请重试',
+        checkingIn: '正在登记...',
+        appointmentNotFoundTitle: '未找到预约',
+        appointmentNotFoundDescription: '查找您的预约时出错。请联系工作人员寻求帮助。'
       },
       validation: {
         error: '表单错误',
@@ -806,7 +862,15 @@ const resources = {
         emailPlaceholder: '输入您的电子邮件地址',
         phonePlaceholder: '输入您的电话号码',
         reschedule: '重新安排',
-        continue: '继续'
+        continue: '继续',
+        importantNotice: '重要通知',
+        highVolumeNotice: '由于需求量大，请按时到达。提前到达的客户可能会被要求返回。',
+        rescheduleInstructions: '如果您需要重新安排，请联系工作人员。',
+        rescheduleButton: '重新安排',
+        rescheduleModalTitle: '重新安排预约',
+        rescheduleModalCurrent: '当前预约',
+        rescheduleModalInstructions: '为您的预约选择新的日期和时间。',
+        rescheduleModalCancel: '取消'
       },
       specialRequests: {
         title: '特殊要求',
@@ -844,14 +908,31 @@ const resources = {
         mobility: '行动辅助',
         other: '其他要求',
         submit: '提交',
-        submitting: '正在提交...'
+        submitting: '正在提交...',
+        selectedCount: '已选择 {{count}} 项'
       },
       confirmation: {
         title: '登记完成',
         subtitle: '感谢您的登记。您的信息已记录。',
         appointmentDetails: '预约详情',
         specialRequests: '特殊要求',
-        finish: '完成'
+        finish: '完成',
+        importantInfo: '重要信息',
+        arrivalInstructions: '请按时到达。由于需求量大，提前到达的客户可能会被要求返回。',
+        lateInstructions: '迟到了？到达时请联系工作人员。',
+        yourPreferences: '您的偏好',
+        dietaryPreferencesLabel: '饮食偏好',
+        householdInformationLabel: '家庭信息',
+        assistanceLabel: '辅助需求',
+        additionalNotesLabel: '其他备注',
+        householdChangesNoted: '已记录家庭变化',
+        noHouseholdChanges: '未报告家庭变化',
+        mobilityAssistanceProvided: '将提供行动辅助',
+        noAssistanceNeeded: '不需要特殊辅助',
+        noAllergiesNoted: '未发现过敏',
+        noUnwantedFoodsNoted: '未发现不喜欢的食物',
+        noSpecialRequests: '无特殊要求',
+        contactInstructions: '如果您有任何问题或需要修改，请联系工作人员。'
       },
       assistance: {
         title: '需要帮助？',
@@ -863,6 +944,12 @@ const resources = {
         needAssistance: '需要协助？',
         description: '如果您需要帮助或有任何问题，请直接致电我们。',
         callUs: '致电我们',
+        emailSubject: '食品银行登记与预约系统协助请求',
+        emailBody: '您好，我需要食品银行登记方面的帮助。请帮助我：',
+        phoneCopied: '消息已复制。请向工作人员出示。',
+        phoneFallback: '请联系工作人员寻求帮助。',
+        emailCopied: '消息已复制。请向工作人员出示。',
+        emailFallback: '请联系工作人员寻求帮助。',
         contactInfo: {
           phone: '电话',
           email: '电子邮件',
@@ -984,7 +1071,10 @@ const resources = {
         validationError: 'सत्यापन त्रुटि',
         validationErrorDescription: 'कृपया नीचे दी गई त्रुटियों को ठीक करें',
         checkInFailed: 'नियुक्ति नहीं मिली',
-        tryAgain: 'कृपया पुनः प्रयास करें'
+        tryAgain: 'कृपया पुनः प्रयास करें',
+        checkingIn: 'चेक-इन हो रहा है...',
+        appointmentNotFoundTitle: 'नियुक्ति नहीं मिली',
+        appointmentNotFoundDescription: 'आपकी नियुक्ति खोजने में एक त्रुटि हुई। कृपया सहायता के लिए कर्मचारी से बात करें।'
       },
       validation: {
         error: 'फॉर्म त्रुटि',
@@ -1003,7 +1093,15 @@ const resources = {
         emailPlaceholder: 'अपना ईमेल पता दर्ज करें',
         phonePlaceholder: 'अपना फोन नंबर दर्ज करें',
         reschedule: 'पुनर्निर्धारित करें',
-        continue: 'जारी रखें'
+        continue: 'जारी रखें',
+        importantNotice: 'महत्वपूर्ण सूचना',
+        highVolumeNotice: 'उच्च मांग के कारण, कृपया अपने निर्धारित समय पर पहुंचें। जल्दी पहुंचने वालों को वापस आने के लिए कहा जा सकता है।',
+        rescheduleInstructions: 'यदि आपको पुनर्निर्धारित करना है, तो कृपया कर्मचारी से बात करें।',
+        rescheduleButton: 'पुनर्निर्धारित करें',
+        rescheduleModalTitle: 'नियुक्ति पुनर्निर्धारित करें',
+        rescheduleModalCurrent: 'वर्तमान नियुक्ति',
+        rescheduleModalInstructions: 'अपनी नियुक्ति के लिए नई तारीख और समय चुनें।',
+        rescheduleModalCancel: 'रद्द करें'
       },
       specialRequests: {
         title: 'विशेष अनुरोध',
@@ -1041,14 +1139,31 @@ const resources = {
         mobility: 'गतिशीलता सहायता',
         other: 'अन्य अनुरोध',
         submit: 'जमा करें',
-        submitting: 'जमा हो रहा है...'
+        submitting: 'जमा हो रहा है...',
+        selectedCount: '{{count}} चयनित'
       },
       confirmation: {
         title: 'चेक-इन पूर्ण',
         subtitle: 'चेक-इन के लिए धन्यवाद। आपकी जानकारी दर्ज की गई है।',
         appointmentDetails: 'नियुक्ति विवरण',
         specialRequests: 'विशेष अनुरोध',
-        finish: 'पूर्ण'
+        finish: 'पूर्ण',
+        importantInfo: 'महत्वपूर्ण जानकारी',
+        arrivalInstructions: 'कृपया अपने निर्धारित समय पर पहुंचें। उच्च मांग के कारण, जल्दी पहुंचने वालों को वापस आने के लिए कहा जा सकता है।',
+        lateInstructions: 'देर हो रही है? पहुंचने पर कृपया कर्मचारी से बात करें।',
+        yourPreferences: 'आपकी प्राथमिकताएं',
+        dietaryPreferencesLabel: 'आहार प्राथमिकताएं',
+        householdInformationLabel: 'घर की जानकारी',
+        assistanceLabel: 'सहायता की आवश्यकताएं',
+        additionalNotesLabel: 'अतिरिक्त नोट्स',
+        householdChangesNoted: 'घर में बदलाव नोट किए गए हैं',
+        noHouseholdChanges: 'कोई घरेलू बदलाव रिपोर्ट नहीं किया गया',
+        mobilityAssistanceProvided: 'गतिशीलता सहायता प्रदान की जाएगी',
+        noAssistanceNeeded: 'कोई विशेष सहायता आवश्यक नहीं',
+        noAllergiesNoted: 'कोई एलर्जी नोट नहीं की गई',
+        noUnwantedFoodsNoted: 'कोई अवांछित खाद्य पदार्थ नोट नहीं किए गए',
+        noSpecialRequests: 'कोई विशेष अनुरोध नहीं',
+        contactInstructions: 'यदि आपके कोई प्रश्न हैं या परिवर्तन करने की आवश्यकता है, तो कृपया कर्मचारी से बात करें।'
       },
       assistance: {
         title: 'मदद चाहिए?',
@@ -1060,6 +1175,12 @@ const resources = {
         needAssistance: 'सहायता चाहिए?',
         description: 'यदि आपको मदद चाहिए या कोई प्रश्न है, तो कृपया हमें सीधे कॉल करें।',
         callUs: 'हमें कॉल करें',
+        emailSubject: 'फूड बैंक चेक-इन और अपॉइंटमेंट सिस्टम सहायता अनुरोध',
+        emailBody: 'नमस्ते, मुझे अपने फूड बैंक चेक-इन में सहायता चाहिए। कृपया मेरी मदद करें:',
+        phoneCopied: 'संदेश कॉपी किया गया। कृपया इसे कर्मचारी को दिखाएं।',
+        phoneFallback: 'कृपया सहायता के लिए कर्मचारी से बात करें।',
+        emailCopied: 'संदेश कॉपी किया गया। कृपया इसे कर्मचारी को दिखाएं।',
+        emailFallback: 'कृपया सहायता के लिए कर्मचारी से बात करें।',
         contactInfo: {
           phone: 'फोन',
           email: 'ईमेल',
@@ -1181,7 +1302,10 @@ const resources = {
         validationError: 'خطأ في التحقق',
         validationErrorDescription: 'يرجى إصلاح الأخطاء أدناه',
         checkInFailed: 'لم يتم العثور على الموعد',
-        tryAgain: 'يرجى المحاولة مرة أخرى'
+        tryAgain: 'يرجى المحاولة مرة أخرى',
+        checkingIn: 'جاري تسجيل الحضور...',
+        appointmentNotFoundTitle: 'لم يتم العثور على الموعد',
+        appointmentNotFoundDescription: 'حدث خطأ في العثور على موعدك. يرجى التحدث مع أحد أعضاء الفريق للحصول على المساعدة.'
       },
       validation: {
         error: 'خطأ في النموذج',
@@ -1200,7 +1324,15 @@ const resources = {
         emailPlaceholder: 'أدخل عنوان بريدك الإلكتروني',
         phonePlaceholder: 'أدخل رقم هاتفك',
         reschedule: 'إعادة الجدولة',
-        continue: 'متابعة'
+        continue: 'متابعة',
+        importantNotice: 'إشعار مهم',
+        highVolumeNotice: 'بسبب الطلب الكبير، يرجى الوصول في الوقت المحدد. قد يُطلب من الوافدين مبكراً العودة.',
+        rescheduleInstructions: 'إذا كنت بحاجة إلى إعادة الجدولة، يرجى التحدث مع أحد أعضاء الفريق.',
+        rescheduleButton: 'إعادة الجدولة',
+        rescheduleModalTitle: 'إعادة جدولة الموعد',
+        rescheduleModalCurrent: 'الموعد الحالي',
+        rescheduleModalInstructions: 'اختر تاريخاً ووقتاً جديدين لموعدك.',
+        rescheduleModalCancel: 'إلغاء'
       },
       specialRequests: {
         title: 'الطلبات الخاصة',
@@ -1238,14 +1370,31 @@ const resources = {
         mobility: 'مساعدة الحركة',
         other: 'طلبات أخرى',
         submit: 'إرسال',
-        submitting: 'جاري الإرسال...'
+        submitting: 'جاري الإرسال...',
+        selectedCount: 'تم اختيار {{count}}'
       },
       confirmation: {
         title: 'تم تسجيل الحضور',
         subtitle: 'شكراً لتسجيل الحضور. تم تسجيل معلوماتك.',
         appointmentDetails: 'تفاصيل الموعد',
         specialRequests: 'الطلبات الخاصة',
-        finish: 'تم'
+        finish: 'تم',
+        importantInfo: 'معلومات مهمة',
+        arrivalInstructions: 'يرجى الوصول في الوقت المحدد لك. بسبب الطلب الكبير، قد يُطلب من الوافدين مبكراً العودة.',
+        lateInstructions: 'متأخر؟ يرجى التحدث مع أحد أعضاء الفريق عند وصولك.',
+        yourPreferences: 'تفضيلاتك',
+        dietaryPreferencesLabel: 'التفضيلات الغذائية',
+        householdInformationLabel: 'معلومات العائلة',
+        assistanceLabel: 'احتياجات المساعدة',
+        additionalNotesLabel: 'ملاحظات إضافية',
+        householdChangesNoted: 'تم تسجيل تغييرات العائلة',
+        noHouseholdChanges: 'لم يتم الإبلاغ عن تغييرات في العائلة',
+        mobilityAssistanceProvided: 'سيتم توفير مساعدة الحركة',
+        noAssistanceNeeded: 'لا حاجة لمساعدة خاصة',
+        noAllergiesNoted: 'لم يتم تسجيل حساسيات',
+        noUnwantedFoodsNoted: 'لم يتم تسجيل أطعمة غير مرغوبة',
+        noSpecialRequests: 'لا توجد طلبات خاصة',
+        contactInstructions: 'إذا كان لديك أي أسئلة أو تحتاج إلى إجراء تغييرات، يرجى التحدث مع أحد أعضاء الفريق.'
       },
       assistance: {
         title: 'تحتاج مساعدة؟',
@@ -1257,6 +1406,12 @@ const resources = {
         needAssistance: 'تحتاج مساعدة؟',
         description: 'إذا كنت تحتاج مساعدة أو لديك أي أسئلة، يرجى الاتصال بنا مباشرة.',
         callUs: 'اتصل بنا',
+        emailSubject: 'طلب مساعدة نظام تسجيل ومواعيد بنك الطعام',
+        emailBody: 'مرحباً، أحتاج مساعدة في تسجيل الحضور في بنك الطعام. يرجى مساعدتي في:',
+        phoneCopied: 'تم نسخ الرسالة. يرجى إظهارها لأحد أعضاء الفريق.',
+        phoneFallback: 'يرجى التحدث مع أحد أعضاء الفريق للحصول على المساعدة.',
+        emailCopied: 'تم نسخ الرسالة. يرجى إظهارها لأحد أعضاء الفريق.',
+        emailFallback: 'يرجى التحدث مع أحد أعضاء الفريق للحصول على المساعدة.',
         contactInfo: {
           phone: 'الهاتف',
           email: 'البريد الإلكتروني',
@@ -1446,7 +1601,8 @@ const resources = {
         mobility: 'ਚਲਣ-ਫਿਰਣ ਵਿੱਚ ਮਦਦ',
         other: 'ਹੋਰ ਬੇਨਤੀਆਂ',
         submit: 'ਜਮ੍ਹਾ ਕਰੋ',
-        submitting: 'ਜਮ੍ਹਾ ਹੋ ਰਿਹਾ ਹੈ...'
+        submitting: 'ਜਮ੍ਹਾ ਹੋ ਰਿਹਾ ਹੈ...',
+        selectedCount: '{{count}} ਚੁਣੇ ਗਏ'
       },
       confirmation: {
         title: 'ਚੈਕ-ਇਨ ਪੂਰਾ ਹੋਇਆ',
@@ -1499,7 +1655,7 @@ const resources = {
 };
 
 i18n
-  .use(initReactI18next)
+  .use(initReactI18next as any)
   .init({
     resources,
     lng: 'en',

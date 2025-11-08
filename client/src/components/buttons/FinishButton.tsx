@@ -20,10 +20,17 @@ interface FinishButtonProps extends ButtonProps {
   children?: React.ReactNode;
 }
 
-const FinishButton: React.FC<FinishButtonProps> = ({ children = 'Done', ...props }) => {
+const FinishButton: React.FC<FinishButtonProps> = ({ children = 'Done', width, height, ...props }) => {
+  // IMPORTANT: Override variant defaults to ensure props take precedence
+  // If width is provided, set minW to match to prevent variant minW from overriding
+  const minW = width ? (typeof width === 'object' ? width : { base: width, md: width }) : undefined;
+  
   return (
     <Button
       variant="primary"
+      width={width}
+      height={height}
+      minW={minW}
       {...props}
     >
       {children}

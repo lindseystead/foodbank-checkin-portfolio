@@ -15,9 +15,6 @@
 
 const VANCOUVER_TIMEZONE = 'America/Vancouver';
 
-/**
- * Format a date/time string to Vancouver timezone
- */
 export const formatToVancouverTime = (dateString: string | Date): string => {
   if (!dateString) return 'N/A';
   
@@ -33,9 +30,6 @@ export const formatToVancouverTime = (dateString: string | Date): string => {
   });
 };
 
-/**
- * Format a date/time string to Vancouver time only
- */
 export const formatToVancouverTimeOnly = (dateString: string | Date): string => {
   if (!dateString) return 'N/A';
   
@@ -48,9 +42,6 @@ export const formatToVancouverTimeOnly = (dateString: string | Date): string => 
   });
 };
 
-/**
- * Format a date/time string to Vancouver date only
- */
 export const formatToVancouverDateOnly = (dateString: string | Date): string => {
   if (!dateString) return 'N/A';
   
@@ -63,9 +54,6 @@ export const formatToVancouverDateOnly = (dateString: string | Date): string => 
   });
 };
 
-/**
- * Get current Vancouver time
- */
 export const getCurrentVancouverTime = (): Date => {
   return new Date(new Date().toLocaleString('en-US', { timeZone: VANCOUVER_TIMEZONE }));
 };

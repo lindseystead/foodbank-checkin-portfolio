@@ -37,13 +37,7 @@ import PrimaryButton from '../components/buttons/PrimaryButton';
 import AssistanceButton from '../components/buttons/AssistanceButton';
 import PageHeader from '../components/ui/PageHeader';
 
-/**
- * Mobile‑safe Special Requests page.
- * - Removes nested animated containers + absolute positioning
- * - Uses natural page scroll with sticky progress header
- * - Defensive parsing of sessionStorage
- * - Touch‑friendly toggle pills for dietary preferences
- */
+// Mobile-friendly version with natural scrolling
 
 interface SpecialRequest {
   dietaryRestrictions: string[];
@@ -54,7 +48,6 @@ interface SpecialRequest {
   diaperSize?: string;
 }
 
-// Interactive toggle button with theme colors
 const ToggleButton: React.FC<{
   isActive: boolean;
   onToggle: () => void;
@@ -176,9 +169,53 @@ const SpecialRequests: React.FC = () => {
 
       const locale = (typeof navigator !== 'undefined' && navigator.language) || i18n.language || 'en-US';
       
-      // Use the actual appointment time from CSV data
-      if (parsed.appointmentTime) {
-        // Parse the ISO string directly to get Pacific time components
+      // IMPORTANT: Use pickUpTime (HH:MM format) if available - more reliable than parsing ISO string
+      // This avoids timezone conversion issues and ensures correct time display
+      if (parsed.pickUpTime) {
+        // Parse pickUpTime (HH:MM format, e.g., "09:00", "14:30")
+        const [hour24, minute] = parsed.pickUpTime.split(':').map(Number);
+        
+        // Format time with AM/PM
+        const hour12 = hour24 > 12 ? hour24 - 12 : (hour24 === 0 ? 12 : hour24);
+        const ampm = hour24 >= 12 ? 'PM' : 'AM';
+        const timeStr = `${hour12}:${minute.toString().padStart(2, '0')} ${ampm}`;
+        setAppointmentTime(timeStr);
+        
+        // Get date from pickUpDate or appointmentTime ISO string
+        let dateObj: Date;
+        if (parsed.pickUpDate) {
+          // Parse pickUpDate (should be YYYY-MM-DD format, but handle old format too)
+          // Check if it's already in YYYY-MM-DD format
+          if (parsed.pickUpDate.match(/^\d{4}-\d{2}-\d{2}$/)) {
+            // YYYY-MM-DD format (e.g., "2025-04-14")
+            const [year, month, day] = parsed.pickUpDate.split('-').map(Number);
+            dateObj = new Date(year, month - 1, day);
+          } else if (parsed.pickUpDate.includes(' @ ')) {
+            // Old format: "2025-04-14 @ 9:00 AM" - extract date part
+            const datePart = parsed.pickUpDate.split(' @ ')[0];
+            const [year, month, day] = datePart.split('-').map(Number);
+            dateObj = new Date(year, month - 1, day);
+          } else {
+            // Try to parse as-is
+            dateObj = new Date(parsed.pickUpDate);
+          }
+        } else if (parsed.appointmentTime) {
+          // Fallback: Extract date from ISO string
+          const match = parsed.appointmentTime.match(/(\d{4})-(\d{2})-(\d{2})/);
+          if (match) {
+            const [, year, month, day] = match.map(Number);
+            dateObj = new Date(year, month - 1, day);
+          } else {
+            dateObj = new Date(parsed.appointmentTime);
+          }
+        } else {
+          dateObj = new Date();
+        }
+        
+        const dateStr = dateObj.toLocaleDateString(locale, { weekday: 'long', month: 'long', day: 'numeric' });
+        setAppointmentDate(dateStr);
+      } else if (parsed.appointmentTime) {
+        // Fallback: Parse ISO string if pickUpTime not available
         // Format expected: "2025-10-27T09:00:00-07:00" or "2025-10-27T09:00:00"
         const isoString = parsed.appointmentTime;
         
@@ -203,10 +240,10 @@ const SpecialRequests: React.FC = () => {
           // Fallback to Date parsing if format is unexpected
           const appointmentDate = new Date(parsed.appointmentTime);
           setAppointmentTime(
-            appointmentDate.toLocaleTimeString(locale, { hour: 'numeric', minute: '2-digit', hour12: true })
+            appointmentDate.toLocaleTimeString(locale, { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'America/Vancouver' })
           );
           setAppointmentDate(
-            appointmentDate.toLocaleDateString(locale, { weekday: 'long', month: 'long', day: 'numeric' })
+            appointmentDate.toLocaleDateString(locale, { weekday: 'long', month: 'long', day: 'numeric', timeZone: 'America/Vancouver' })
           );
         }
       } else {
@@ -239,11 +276,13 @@ const SpecialRequests: React.FC = () => {
   const handleSubmit = () => {
     if (!checkInData) {
       toast({
-        title: t('errors.title') || 'Error',
-        description: t('errors.checkinMissing') || 'Check-in data not found. Please start over.',
+        title: 'Session Expired',
+        description: 'Your check-in session has expired. Please return to the start page and begin again.',
         status: 'error',
-        duration: 5000,
+        duration: 6000,
         isClosable: true,
+        position: 'bottom',
+        variant: 'subtle',
       });
       return;
     }
@@ -266,22 +305,26 @@ const SpecialRequests: React.FC = () => {
       }
 
       toast({
-        title: 'Saved',
-        description: 'Your special requests have been saved.',
+        title: 'Preferences Saved',
+        description: 'Your dietary preferences and special requests have been saved. Continuing to appointment details...',
         status: 'success',
-        duration: 2500,
+        duration: 3000,
         isClosable: true,
+        position: 'bottom',
+        variant: 'subtle',
       });
 
       navigate('/appointment-details');
     } catch (e) {
       console.error('Save error', e);
       toast({
-        title: t('errors.title') || 'Error',
-        description: t('errors.saveFailed') || 'Failed to save your preferences. Please try again.',
+        title: 'Save Failed',
+        description: 'Unable to save your preferences. Please try again, or contact us if the problem persists.',
         status: 'error',
-        duration: 5000,
+        duration: 6000,
         isClosable: true,
+        position: 'bottom',
+        variant: 'subtle',
       });
     }
   };
@@ -292,12 +335,12 @@ const SpecialRequests: React.FC = () => {
       <Box
         w="full"
         position="absolute"
-        top={{ base: "60px", md: "0" }}
+        top={{ base: "50px", md: "0" }}
         left="0"
         right="0"
         bg="white"
         zIndex="1"
-        pb={{ base: 1, md: 0.5 }}
+        pb={1}
         pt={0}
       >
         <ProgressSteps
@@ -314,12 +357,12 @@ const SpecialRequests: React.FC = () => {
 
       {/* Main Form Container */}
       <VStack 
-        spacing={{ base: 4, md: 6, lg: 8 }} 
+        spacing={{ base: 4, md: 6 }} 
         width="full" 
-        maxW={{ base: "100%", sm: "90%", md: "800px", lg: "900px", xl: "1000px" }} 
+        maxW={{ base: "100%", md: "1000px" }} 
         mx="auto" 
-        mt={{ base: "100px", md: "60px" }}
-        px={{ base: 4, md: 6, lg: 8 }}
+        pt={{ base: "100px", md: "70px" }}
+        px={{ base: 4, md: 6 }}
         position="relative"
         zIndex="0"
         minH="auto"
@@ -362,7 +405,7 @@ const SpecialRequests: React.FC = () => {
           p={{ base: 4, md: 6, lg: 8 }}
           overflow="visible"
         >
-          <PageHeader title={t('specialRequests.title')} subTitle={t('specialRequests.subtitle')} logoSize="sm" mb={2} />
+          <PageHeader title={t('specialRequests.title')} subTitle={t('specialRequests.subtitle')} logoSize="sm" mb={4} />
 
           {/* Welcome Card */}
           <Box 
@@ -375,7 +418,7 @@ const SpecialRequests: React.FC = () => {
             textAlign="center"
             boxShadow="sm"
           >
-            <Heading size="lg" color="client.primary" mb={2}>
+            <Heading size="md" color="client.primary" mb={2}>
               👋 Hello {clientName}! We found your appointment
             </Heading>
             <Box 
@@ -397,7 +440,7 @@ const SpecialRequests: React.FC = () => {
 
           {/* Dietary Preferences */}
           <Box mb={8}>
-            <Heading size="md" color="gray.800" mb={6}>
+            <Heading size="md" color="gray.800" mb={4}>
               Choose one or more of the options below that apply to you
             </Heading>
             
@@ -461,7 +504,7 @@ const SpecialRequests: React.FC = () => {
 
           {/* Volunteer Assistance */}
           <Box mb={8}>
-            <Heading size="md" color="gray.800" mb={6}>
+            <Heading size="md" color="gray.800" mb={4}>
               Would you like a volunteer to help pack your food into your car?
             </Heading>
             
@@ -524,13 +567,13 @@ const SpecialRequests: React.FC = () => {
 
           {/* Additional Notes */}
           <Box mb={8}>
-            <Heading size="md" color="client.primary" mb={6}>
+            <Heading size="md" color="client.primary" mb={4}>
               Additional Information
             </Heading>
             
             <Stack spacing={6}>
               <FormControl>
-                <FormLabel mb={3} fontSize="md" fontWeight="600" color="gray.700">
+                <FormLabel mb={2} fontSize="md" fontWeight="medium" color="gray.700">
                   Allergies & Food Restrictions
                 </FormLabel>
                 <Textarea
@@ -560,7 +603,7 @@ const SpecialRequests: React.FC = () => {
               </FormControl>
 
               <FormControl>
-                <FormLabel mb={3} fontSize="md" fontWeight="600" color="gray.700">
+                <FormLabel mb={2} fontSize="md" fontWeight="medium" color="gray.700">
                   Other Notes
                 </FormLabel>
                 <Textarea
@@ -582,7 +625,7 @@ const SpecialRequests: React.FC = () => {
 
               {/* Diaper Size for Tiny Bundles */}
               <FormControl>
-                <FormLabel mb={3} fontSize="md" fontWeight="600" color="gray.700">
+                <FormLabel mb={2} fontSize="md" fontWeight="medium" color="gray.700">
                   Diaper Size (for Tiny Bundles clients)
                 </FormLabel>
                 <Textarea
@@ -617,15 +660,15 @@ const SpecialRequests: React.FC = () => {
             mt={{ base: 4, md: 6 }}
           >
             <AssistanceButton 
-              width={{ base: "100%", md: "320px" }}
-              height={{ base: "48px", md: "52px" }}
-              fontSize={{ base: "md", md: "md" }}
+              width={{ base: "100%", md: "240px" }}
+              height={{ base: "48px", md: "48px" }}
+              fontSize="md"
             />
             <PrimaryButton 
               onClick={handleSubmit} 
-              width={{ base: "100%", md: "320px" }}
-              height={{ base: "48px", md: "52px" }}
-              fontSize={{ base: "md", md: "md" }}
+              width={{ base: "100%", md: "240px" }}
+              height={{ base: "48px", md: "48px" }}
+              fontSize="md"
             >
               {t('common.continue')}
             </PrimaryButton>

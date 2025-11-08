@@ -14,27 +14,25 @@
  */
 
 import { createClient } from '@supabase/supabase-js';
+import { logger } from '../utils/logger';
 
-// Supabase configuration
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 if (!supabaseUrl || !supabaseAnonKey) {
-  console.warn('Supabase configuration not found. Help request functionality will be disabled.');
+  logger.warn('Supabase not configured - help requests disabled');
 }
 
-// Create Supabase client
 export const supabase = supabaseUrl && supabaseAnonKey 
   ? createClient(supabaseUrl, supabaseAnonKey, {
       auth: {
-        persistSession: false, // Don't persist auth sessions in client app
-        autoRefreshToken: false, // Don't auto-refresh tokens
-        detectSessionInUrl: false // Don't detect sessions in URL
+        persistSession: false,
+        autoRefreshToken: false,
+        detectSessionInUrl: false
       }
     })
   : null;
 
-// Helper function to check if Supabase is available
 export const isSupabaseAvailable = (): boolean => {
   return supabase !== null;
 };

@@ -52,18 +52,23 @@ const DashboardPage: React.FC = () => {
   const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
   const navigate = useNavigate();
 
-  // Real-time data fetching
+  /**
+   * Fetch today's check-ins from backend API
+   * 
+   * Best Practices:
+   * - Filters to today's appointments only
+   * - Handles connection errors gracefully
+   * - Preserves existing data on transient errors
+   */
   const fetchCheckIns = async () => {
     try {
-      // Use direct API call to ensure we get real-time data
       const response = await fetch(getApiUrl('/checkin/appointments'));
       const data = await response.json();
       
       if (data.success && data.data) {
-        // Use the same data source as Analytics chart for consistency
         const appointments = data.data;
         
-        // Filter for today's appointments only (same logic as analytics)
+        // Only today's appointments
         const todayAppointments = appointments.filter((appointment: CheckInRecord) => {
           if (appointment.appointmentTime) {
             const appointmentDate = new Date(appointment.appointmentTime);
@@ -78,13 +83,12 @@ const DashboardPage: React.FC = () => {
         setCheckIns([]);
       }
     } catch (error) {
-      // Only log errors that aren't connection refused (server not running)
       if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
         console.warn('Backend server not available for check-ins, will retry later');
       } else {
         console.error('Failed to fetch check-ins:', error);
       }
-      // Don't clear check-ins on connection errors, keep existing data
+      // Keep existing data on connection errors
       if (!(error instanceof TypeError && error.message.includes('Failed to fetch'))) {
         setCheckIns([]);
       }
@@ -94,14 +98,61 @@ const DashboardPage: React.FC = () => {
     }
   };
 
-  // Initial fetch and auto-refresh
+  /**
+   * Polling setup with Page Visibility API
+   * 
+   * Best Practices Implemented:
+   * - Page Visibility API: Pauses polling when browser tab is hidden
+   * - Optimized Interval: 2 minutes (reduced from 60s to minimize API calls)
+   * - Smart Conditions: Only polls when tab is visible
+   * - Proper Cleanup: Clears intervals and removes event listeners on unmount
+   * 
+   * @see {@link https://developer.mozilla.org/en-US/docs/Web/API/Page_Visibility_API} Page Visibility API
+   */
   useEffect(() => {
     fetchCheckIns();
     
-    // Auto-refresh every 60 seconds (reduced frequency to prevent excessive API calls)
-    const interval = setInterval(fetchCheckIns, 60000);
+    // Use visibility API to pause polling when tab is hidden
+    let interval: NodeJS.Timeout | null = null;
+    let isVisible = !document.hidden;
     
-    return () => clearInterval(interval);
+    const startPolling = () => {
+      if (interval) clearInterval(interval);
+      interval = setInterval(() => {
+        // Only poll if tab is visible
+        if (!document.hidden) {
+          fetchCheckIns();
+        }
+      }, 120000); // Poll every 2 minutes (optimized to reduce API calls)
+    };
+    
+    const handleVisibilityChange = () => {
+      isVisible = !document.hidden;
+      if (isVisible) {
+        // Tab became visible - fetch immediately and start polling
+        fetchCheckIns();
+        startPolling();
+      } else {
+        // Tab hidden - stop polling
+        if (interval) {
+          clearInterval(interval);
+          interval = null;
+        }
+      }
+    };
+    
+    // Start polling if visible
+    if (isVisible) {
+      startPolling();
+    }
+    
+    // Listen for visibility changes
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    
+    return () => {
+      if (interval) clearInterval(interval);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
   }, []);
 
   // Format date helper
@@ -452,7 +503,11 @@ const DashboardPage: React.FC = () => {
                 <CheckInAnalyticsChart />
               </TabPanel>
               <TabPanel px={{ base: 3, md: 4 }} py={{ base: 3, md: 4 }}>
-                <RecentCheckInsList checkIns={checkIns} isLoading={isLoadingCheckIns} />
+                <RecentCheckInsList 
+                  checkIns={checkIns} 
+                  isLoading={isLoadingCheckIns}
+                  onRefresh={fetchCheckIns}
+                />
               </TabPanel>
               <TabPanel px={{ base: 3, md: 4 }} py={{ base: 3, md: 4 }}>
                 <ClientLookup />

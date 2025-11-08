@@ -5,12 +5,25 @@
  * and configuration for the Foodbank Check-In and Appointment System. It handles
  * CORS, static file serving, and routes all API endpoints for the admin and client applications.
  * 
+ * Best Practices Implemented:
+ * - Rate Limiting: 200 requests per IP per 15 minutes to prevent abuse
+ * - Security Headers: Helmet middleware for XSS protection, clickjacking prevention
+ * - CORS Protection: Whitelist-based CORS with credentials support
+ * - Input Validation: JSON body parsing with size limits
+ * - Error Handling: Graceful error responses with proper HTTP status codes
+ * 
+ * Note: Frontend components should implement smart polling with:
+ * - Page Visibility API to pause when tab is hidden
+ * - Exponential backoff on connection errors
+ * - Appropriate polling intervals (30-120 seconds based on priority)
+ * 
  * @author Lindsey D. Stead
  * @version 1.0.0
  * @since 2025-10-20
  * @license Proprietary - see LICENSE file for details
  * 
  * @see {@link ./routes/} API route modules
+ * @see {@link https://developer.mozilla.org/en-US/docs/Web/API/Page_Visibility_API} Page Visibility API
  */
 
 import 'dotenv/config';
@@ -48,8 +61,22 @@ app.use(helmet({
   },
 }));
 
-// Rate limiting - protect against abuse
-// Had some issues with load testing, bumped this up
+/**
+ * Rate limiting - protect against abuse and excessive API calls
+ * 
+ * Best Practice: Rate limiting prevents server overload from:
+ * - Excessive polling from frontend components
+ * - DDoS attacks
+ * - Accidental infinite loops
+ * 
+ * Configuration: 200 requests per IP per 15 minutes
+ * This allows for normal polling (30-120 second intervals) while preventing abuse.
+ * 
+ * Note: Frontend components should implement smart polling to stay within limits:
+ * - Page Visibility API to pause when tab is hidden
+ * - Exponential backoff on connection errors
+ * - Optimized polling intervals (30-120 seconds based on priority)
+ */
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 200 // Allow up to 200 requests per IP per 15 minutes

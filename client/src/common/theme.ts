@@ -10,7 +10,7 @@
  * @since 2025-10-20
  * @license Proprietary - see LICENSE file for details
  * 
- * @see {@link ../admin-panel/src/theme.ts} Admin Panel Theme
+ * @see {@link ../../admin/src/common/theme.ts} Admin Panel Theme
  * @see {@link https://chakra-ui.com/docs/styled-system/theme} Chakra UI Theme Docs
  */
 
@@ -181,8 +181,14 @@ const theme = extendTheme({
           },
           _disabled: {
             bg: "#25385D",
-            opacity: 0.4,
-            cursor: "not-allowed"
+            opacity: 0.6,
+            cursor: "not-allowed",
+            _hover: {
+              bg: "#25385D",
+              opacity: 0.6,
+              transform: 'none',
+              boxShadow: 'none'
+            }
           },
         },
         // Language button styles

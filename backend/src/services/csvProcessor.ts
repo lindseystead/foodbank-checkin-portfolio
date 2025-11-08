@@ -84,28 +84,32 @@ export class CSVProcessor {
         while ((record = parser.read()) !== null) {
           // Process CSV record (first record debug removed to reduce console noise)
           // Parse the pickup date format: "2025-04-14 @ 9:00 AM" -> ISO
-          const pickUpDate = record['Pick Up Date'] || record.pickup_date || record.pick_up_date || record.pickUpDate || record.date;
+          const pickUpDateRaw = record['Pick Up Date'] || record.pickup_date || record.pick_up_date || record.pickUpDate || record.date;
           let pickUpISO = null;
           let pickUpTime = null; // Extract time in HH:MM format
+          let pickUpDate = null; // Store date in YYYY-MM-DD format
           
-          if (pickUpDate) {
+          if (pickUpDateRaw) {
             try {
               // Convert "2025-04-14 @ 9:00 AM" to ISO format
-              const dateStr = pickUpDate.replace(' @ ', 'T').replace(' AM', '').replace(' PM', '');
+              const dateStr = pickUpDateRaw.replace(' @ ', 'T').replace(' AM', '').replace(' PM', '');
               const [datePart, timePart] = dateStr.split('T');
               const [year, month, day] = datePart.split('-');
               const [hour, minute] = timePart.split(':');
               
               // Convert to 24-hour format if PM
               let hour24 = parseInt(hour);
-              if (pickUpDate.includes('PM') && hour24 !== 12) {
+              if (pickUpDateRaw.includes('PM') && hour24 !== 12) {
                 hour24 += 12;
-              } else if (pickUpDate.includes('AM') && hour24 === 12) {
+              } else if (pickUpDateRaw.includes('AM') && hour24 === 12) {
                 hour24 = 0;
               }
               
               // Store time in HH:MM format for easy reuse (e.g., "09:00", "14:30")
               pickUpTime = `${hour24.toString().padStart(2, '0')}:${minute}`;
+              
+              // Store date in YYYY-MM-DD format (e.g., "2025-04-14")
+              pickUpDate = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
               
               // Create proper ISO string representing this date/time in Vancouver
               // We need to account for DST - Vancouver is UTC-7 (PDT) or UTC-8 (PST)
@@ -117,10 +121,10 @@ export class CSVProcessor {
               
               // Extract CSV date for validation (YYYY-MM-DD format)
               if (!csvDate) {
-                csvDate = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+                csvDate = pickUpDate;
               }
             } catch (e) {
-              console.warn('Failed to parse pickup date:', pickUpDate, e);
+              console.warn('Failed to parse pickup date:', pickUpDateRaw, e);
             }
           }
 

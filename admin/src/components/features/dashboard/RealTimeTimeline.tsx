@@ -145,7 +145,14 @@ const RealTimeTimeline: React.FC = () => {
     };
   };
 
-  // Fetch check-ins data
+  /**
+   * Fetch check-ins data for timeline visualization
+   * 
+   * Best Practices:
+   * - Filters to today's appointments (8 AM - 8 PM window)
+   * - Handles connection errors gracefully
+   * - Preserves existing data on transient errors
+   */
   const fetchCheckIns = async () => {
     try {
       // Use appointments endpoint to include CSV appointments
@@ -188,14 +195,59 @@ const RealTimeTimeline: React.FC = () => {
     }
   };
 
-  // Real-time updates every 15 seconds for cost efficiency
+  /**
+   * Polling setup with Page Visibility API
+   * 
+   * Best Practices Implemented:
+   * - Page Visibility API: Pauses polling when browser tab is hidden
+   * - Optimized Interval: 60 seconds (reduced from 15s to minimize API calls)
+   * - Smart Conditions: Only polls when tab is visible
+   * - Proper Cleanup: Clears intervals and removes event listeners on unmount
+   * 
+   * @see {@link https://developer.mozilla.org/en-US/docs/Web/API/Page_Visibility_API} Page Visibility API
+   */
   useEffect(() => {
     fetchCheckIns();
-    const interval = setInterval(() => {
-      fetchCheckIns();
-    }, 15000); // Update every 15 seconds for cost efficiency
+    
+    let interval: NodeJS.Timeout | null = null;
+    let isVisible = !document.hidden;
+    
+    const startPolling = () => {
+      if (interval) clearInterval(interval);
+      interval = setInterval(() => {
+        // Only poll if tab is visible
+        if (!document.hidden) {
+          fetchCheckIns();
+        }
+      }, 60000); // Poll every 60 seconds (optimized to reduce API calls by 75%)
+    };
+    
+    const handleVisibilityChange = () => {
+      isVisible = !document.hidden;
+      if (isVisible) {
+        // Tab became visible - fetch immediately and start polling
+        fetchCheckIns();
+        startPolling();
+      } else {
+        // Tab hidden - stop polling
+        if (interval) {
+          clearInterval(interval);
+          interval = null;
+        }
+      }
+    };
+    
+    // Start polling if visible
+    if (isVisible) {
+      startPolling();
+    }
+    
+    // Listen for visibility changes
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    
     return () => {
-      clearInterval(interval);
+      if (interval) clearInterval(interval);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, []);
 

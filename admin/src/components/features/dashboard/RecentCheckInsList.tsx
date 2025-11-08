@@ -35,52 +35,30 @@ import { formatDistanceToNow } from 'date-fns';
 import { formatToVancouverTimeOnly } from '../../../utils/timeFormatter'; 
 import { CheckInRecord } from '../../../common/types/checkIn';
 import { formatPhoneNumber } from '../../../common/utils/phoneFormatter';
-import { getTicketUrl } from '../../../common/apiConfig';
+import { printTicket } from '../../../utils/printTicket';
 import AppointmentRebookModal from '../appointments/AppointmentRebookModal';
+import { getStatusColorScheme } from '../../../common/utils/statusColors';
 
 
 interface RecentCheckInsListProps {
   checkIns: CheckInRecord[];
   isLoading?: boolean;
+  onRefresh?: () => void; // Callback to refresh data after updates
 }
 
 const RecentCheckInsList: React.FC<RecentCheckInsListProps> = ({ 
   checkIns = [], 
-  isLoading = false 
+  isLoading = false,
+  onRefresh
 }) => {
   const [selectedClient, setSelectedClient] = React.useState<any>(null);
   const [isRebookModalOpen, setIsRebookModalOpen] = React.useState(false);
 
+  // IMPORTANT: Use consistent status colors matching analytics chart
+  // Use shared utility for consistency across all admin features
   const getStatusColor = (status: string, checkIn: CheckInRecord) => {
-    // Check if appointment is late or missed
-    if (status === 'Pending' && checkIn.appointmentTime) {
-      const appointmentTime = new Date(checkIn.appointmentTime);
-      const now = new Date();
-      const hoursPast = (now.getTime() - appointmentTime.getTime()) / (1000 * 60 * 60);
-      
-      if (hoursPast >= 4) {
-        return 'red'; // Missed - red
-      } else if (hoursPast >= 1) {
-        return 'orange'; // Late - orange
-      }
-    }
-    
-    switch (status) {
-      case 'Collected':
-        return 'green';
-      case 'Shipped':
-        return 'purple';
-      case 'Pending':
-        return 'yellow';
-      case 'Not Collected':
-        return 'red';
-      case 'Rescheduled':
-        return 'orange';
-      case 'Cancelled':
-        return 'gray';
-      default:
-        return 'gray';
-    }
+    // Use shared utility for consistent colors across admin panel
+    return getStatusColorScheme(status, checkIn);
   };
 
   const getStatusText = (status: string, checkIn: CheckInRecord) => {
@@ -282,10 +260,14 @@ const RecentCheckInsList: React.FC<RecentCheckInsListProps> = ({
                           color="gray.500"
                           _hover={{ color: 'blue.500', bg: 'blue.50' }}
                           onClick={() => {
-                            // Use the check-in record ID; backend expects /tickets/:checkInId
+                            /**
+                             * Best Practice: Uses centralized printTicket utility
+                             * to ensure consistent ticket generation across the application.
+                             * All print buttons use the same endpoint and data structure.
+                             */
                             const id = (checkIn as any).id;
                             if (id) {
-                              window.open(getTicketUrl(id), '_blank');
+                              printTicket(id);
                             }
                           }}
                         >
@@ -342,8 +324,14 @@ const RecentCheckInsList: React.FC<RecentCheckInsListProps> = ({
         }}
         client={selectedClient}
         onUpdated={() => {
-          // Refresh the data if needed
-          window.location.reload();
+          // IMPORTANT: Refresh data after appointment update
+          // This ensures the updated appointment appears throughout the app
+          if (onRefresh) {
+            onRefresh();
+          } else {
+            // Fallback: reload page if no refresh callback provided
+            window.location.reload();
+          }
         }}
       />
     )}

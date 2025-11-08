@@ -302,7 +302,7 @@ const SettingsPage: React.FC = () => {
                         <HStack spacing={2} justify="center">
                           <Button
                             as="a"
-                            href="https://www.link2feed.com/support"
+                            href="https://www.link2feed.com"
                             target="_blank"
                             rel="noopener noreferrer"
                             size="xs"

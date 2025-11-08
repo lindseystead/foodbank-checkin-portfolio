@@ -41,10 +41,10 @@ const CSVUploader: React.FC<CSVUploaderProps> = ({ onUploadSuccess }) => {
   const handleFileSelect = (file: File) => {
     if (!file.name.toLowerCase().endsWith('.csv')) {
       toast({
-        title: 'Invalid file type',
-        description: 'Please select a CSV file',
+        title: 'Invalid File Type',
+        description: 'Please select a CSV file exported from Link2Feed. The file must have a .csv extension.',
         status: 'error',
-        duration: 3000,
+        duration: 7000,
         isClosable: true,
       });
       return;
@@ -52,10 +52,10 @@ const CSVUploader: React.FC<CSVUploaderProps> = ({ onUploadSuccess }) => {
 
     if (file.size > 10 * 1024 * 1024) { // 10MB limit
       toast({
-        title: 'File too large',
-        description: 'Please select a file smaller than 10MB',
+        title: 'File Too Large',
+        description: 'The selected file exceeds the 10MB limit. Please export a smaller file from Link2Feed or contact support if you need to upload larger files.',
         status: 'error',
-        duration: 3000,
+        duration: 6000,
         isClosable: true,
       });
       return;
@@ -65,7 +65,7 @@ const CSVUploader: React.FC<CSVUploaderProps> = ({ onUploadSuccess }) => {
   };
 
   const uploadFile = async (file: File) => {
-    // Check if data already exists
+    // Warn if data already exists
     try {
       const statusResponse = await api('/status/day');
       const statusResult = await statusResponse.json();
@@ -86,7 +86,7 @@ const CSVUploader: React.FC<CSVUploaderProps> = ({ onUploadSuccess }) => {
         }
       }
     } catch (error) {
-      // Proceed with upload if checking fails
+      // Continue with upload if check fails
     }
 
     setIsUploading(true);
@@ -96,8 +96,6 @@ const CSVUploader: React.FC<CSVUploaderProps> = ({ onUploadSuccess }) => {
     try {
       const formData = new FormData();
       formData.append('csv', file);
-
-      // Simulate upload progress
       const progressInterval = setInterval(() => {
         setUploadProgress(prev => {
           if (prev >= 90) {
@@ -135,7 +133,7 @@ const CSVUploader: React.FC<CSVUploaderProps> = ({ onUploadSuccess }) => {
         
         // Show success toast
         toast({
-          title: 'CSV Import Successful!',
+          title: 'CSV Import Complete',
           description: message,
           status: 'success',
           duration: 5000,
@@ -152,10 +150,10 @@ const CSVUploader: React.FC<CSVUploaderProps> = ({ onUploadSuccess }) => {
           } else {
             // Show toast for warnings
             toast({
-              title: '⚠️ Date Mismatch Warning',
+              title: 'Date Mismatch Detected',
               description: result.warning,
               status: 'warning',
-              duration: 10000,
+              duration: 6000,
               isClosable: true,
             });
           }
@@ -178,9 +176,9 @@ const CSVUploader: React.FC<CSVUploaderProps> = ({ onUploadSuccess }) => {
 
         toast({
           title: 'Import Failed',
-          description: result.error || 'Please check the file format and try again.',
+          description: result.error || 'The CSV file could not be imported. Please verify the file format matches the Link2Feed export format and try again.',
           status: 'error',
-          duration: 5000,
+          duration: 7000,
           isClosable: true,
         });
       }
@@ -193,9 +191,9 @@ const CSVUploader: React.FC<CSVUploaderProps> = ({ onUploadSuccess }) => {
 
       toast({
         title: 'Upload Failed',
-        description: 'Please check your connection and try again',
+        description: 'Unable to upload the file. Please check your internet connection and try again. If the problem persists, contact technical support.',
         status: 'error',
-        duration: 5000,
+        duration: 7000,
         isClosable: true,
       });
     } finally {
@@ -280,7 +278,7 @@ const CSVUploader: React.FC<CSVUploaderProps> = ({ onUploadSuccess }) => {
         title: 'Upload Failed',
         description: 'Unable to upload file. Please try again.',
         status: 'error',
-        duration: 5000,
+        duration: 7000,
         isClosable: true,
       });
     } finally {

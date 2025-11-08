@@ -34,9 +34,11 @@ import {
   Text,
   Alert,
   AlertIcon,
-  AlertDescription
+  AlertDescription,
+  Box,
+  Divider
 } from '@chakra-ui/react';
-import { FiHelpCircle, FiPhone, FiUser, FiPhone as FiPhoneIcon } from 'react-icons/fi';
+import { FiHelpCircle, FiPhone, FiUser, FiPhone as FiPhoneIcon, FiInfo } from 'react-icons/fi';
 import { useTranslation } from 'react-i18next';
 import { getHelpRequestUrl } from '../../common/apiConfig';
 
@@ -101,7 +103,9 @@ const AssistanceButton: React.FC<AssistanceButtonProps> = ({
               title: t('assistance.phoneCopied', 'Phone number copied!'),
               description: t('assistance.phoneCopiedDesc', `Copied ${formattedPhone} to clipboard`),
               status: "success",
-              duration: 5000,
+              duration: 3000,
+              isClosable: true,
+              position: 'bottom',
             });
           }).catch(() => {
             toast({
@@ -109,6 +113,8 @@ const AssistanceButton: React.FC<AssistanceButtonProps> = ({
               description: formattedPhone,
               status: "info",
               duration: 5000,
+              isClosable: true,
+              position: 'bottom',
             });
           });
         } else {
@@ -117,6 +123,8 @@ const AssistanceButton: React.FC<AssistanceButtonProps> = ({
             description: formattedPhone,
             status: "info",
             duration: 5000,
+            isClosable: true,
+            position: 'bottom',
           });
         }
       }
@@ -127,10 +135,12 @@ const AssistanceButton: React.FC<AssistanceButtonProps> = ({
     // Validate required fields
     if (!formData.message.trim()) {
       toast({
-        title: t('assistance.messageRequired', 'Message required'),
-        description: t('assistance.messageRequiredDesc', 'Please enter your message'),
+        title: 'Message Required',
+        description: 'Please describe how we can help you in the message field.',
         status: "warning",
-        duration: 3000,
+        duration: 4000,
+        isClosable: true,
+        position: 'bottom',
       });
       return;
     }
@@ -138,10 +148,12 @@ const AssistanceButton: React.FC<AssistanceButtonProps> = ({
     if (needsVerification) {
       if (!formData.phoneNumber.trim() || !formData.lastName.trim()) {
         toast({
-          title: t('assistance.clientInfoRequired', 'Client information required'),
-          description: t('assistance.clientInfoRequiredDesc', 'Please enter your phone number and last name'),
+          title: 'Information Required',
+          description: 'Please provide your phone number and last name so we can locate your appointment.',
           status: "warning",
-          duration: 3000,
+          duration: 4000,
+          isClosable: true,
+          position: 'bottom',
         });
         return;
       }
@@ -170,10 +182,12 @@ const AssistanceButton: React.FC<AssistanceButtonProps> = ({
       }
 
       toast({
-        title: t('assistance.requestSent', 'Help request sent!'),
-        description: t('assistance.requestSentDesc', 'We\'ll get back to you soon'),
+        title: 'Help Request Sent',
+        description: 'Your request for assistance has been submitted. A staff member will contact you shortly.',
         status: "success",
         duration: 5000,
+        isClosable: true,
+        position: 'bottom',
       });
 
       // Reset form and close modal
@@ -187,10 +201,12 @@ const AssistanceButton: React.FC<AssistanceButtonProps> = ({
     } catch (error) {
       console.error('Error submitting help request:', error);
       toast({
-        title: t('assistance.errorSending', 'Error sending request'),
-        description: t('assistance.errorSendingDesc', 'Please try calling us instead'),
+        title: 'Request Failed',
+        description: 'Unable to send your help request. Please try again or use the "Call Us" button for immediate assistance.',
         status: "error",
-        duration: 5000,
+        duration: 7000,
+        isClosable: true,
+        position: 'bottom',
       });
     } finally {
       setIsSubmitting(false);
@@ -204,15 +220,30 @@ const AssistanceButton: React.FC<AssistanceButtonProps> = ({
     }));
   };
 
+  // IMPORTANT: Ensure width, height, and fontSize are set for consistency with Continue buttons
+  // Extract these props from buttonProps to ensure they're applied correctly
+  const { width, height, fontSize, ...restButtonProps } = buttonProps;
+  
+  // Use props from buttonProps if provided, otherwise use defaults
+  const buttonWidth = width || { base: "100%", md: "240px" };
+  const buttonHeight = height || { base: "48px", md: "48px" };
+  const buttonFontSize = fontSize || "md";
+  
+  // IMPORTANT: Set minW to match width to ensure consistent sizing (prevents any minW from theme from overriding)
+  const minW = buttonWidth;
+
   // If custom onClick is provided, use simple button
   if (onClick) {
     return (
       <Button
         variant="outline"
-        height={{ base: "48px", md: "48px" }}
+        width={buttonWidth}
+        height={buttonHeight}
+        minW={minW}
         borderRadius="lg"
-        fontSize={{ base: "md", md: "md" }}
+        fontSize={buttonFontSize}
         fontWeight="500"
+        px={{ base: 4, md: 6 }}
         borderColor="gray.300"
         color="gray.700"
         bg="white"
@@ -234,12 +265,7 @@ const AssistanceButton: React.FC<AssistanceButtonProps> = ({
         transition="all 0.2s ease-in-out"
         leftIcon={<FiHelpCircle />}
         onClick={onClick}
-        textAlign="center"
-        isTruncated
-        display="flex"
-        alignItems="center"
-        justifyContent="center"
-        {...buttonProps}
+        {...restButtonProps}
       >
         {t('assistance.button', 'Need Help?')}
       </Button>
@@ -251,10 +277,13 @@ const AssistanceButton: React.FC<AssistanceButtonProps> = ({
     <>
       <Button
         variant="outline"
-        height={{ base: "48px", md: "48px" }}
+        width={buttonWidth}
+        height={buttonHeight}
+        minW={minW}
         borderRadius="lg"
-        fontSize={{ base: "md", md: "md" }}
+        fontSize={buttonFontSize}
         fontWeight="500"
+        px={{ base: 4, md: 6 }}
         borderColor="gray.300"
         color="gray.700"
         bg="white"
@@ -276,181 +305,346 @@ const AssistanceButton: React.FC<AssistanceButtonProps> = ({
         transition="all 0.2s ease-in-out"
         leftIcon={<FiHelpCircle />}
         onClick={onOpen}
-        textAlign="center"
-        isTruncated
-        display="flex"
-        alignItems="center"
-        justifyContent="center"
-        {...buttonProps}
+        {...restButtonProps}
       >
         {t('assistance.button', 'Need Help?')}
       </Button>
 
-      <Modal isOpen={isOpen} onClose={onClose} size={{ base: "sm", md: "md" }} isCentered>
-        <ModalOverlay bg="blackAlpha.600" backdropFilter="blur(10px)" />
+      <Modal 
+        isOpen={isOpen} 
+        onClose={onClose} 
+        size={{ base: "full", sm: "md", md: "lg" }} 
+        isCentered
+        scrollBehavior="inside"
+        motionPreset="slideInBottom"
+        closeOnOverlayClick={true}
+        closeOnEsc={true}
+      >
+        <ModalOverlay bg="blackAlpha.600" backdropFilter="blur(4px)" />
         <ModalContent 
-          mx={{ base: 4, md: 0 }}
-          borderRadius="xl"
+          mx={{ base: 0, md: 0 }}
+          my={{ base: 0, md: 0 }}
+          maxH={{ base: "100vh", md: "90vh" }}
+          borderRadius={{ base: "none", md: "xl" }}
           boxShadow="2xl"
         >
           <ModalHeader 
             fontSize={{ base: "lg", md: "xl" }}
-            fontWeight="600"
+            fontWeight="700"
             color="gray.800"
-            pb={2}
+            pb={3}
+            pt={{ base: 6, md: 6 }}
+            px={{ base: 5, md: 6 }}
+            borderBottom="1px solid"
+            borderColor="gray.200"
           >
-            {t('assistance.title', 'Need Help?')}
+            <HStack spacing={3} align="center">
+              <Box
+                as={FiHelpCircle}
+                boxSize={6}
+                color="blue.500"
+              />
+              <Text>{t('assistance.title', 'Need Help?')}</Text>
+            </HStack>
           </ModalHeader>
-          <ModalCloseButton />
+          <ModalCloseButton 
+            size="md"
+            top={{ base: 4, md: 4 }}
+            right={{ base: 4, md: 4 }}
+            borderRadius="full"
+            _hover={{ bg: 'gray.100' }}
+          />
           
-          <ModalBody pb={6}>
-            <VStack spacing={4} align="stretch">
-              {hasExistingData ? (
-                <Alert status="info" borderRadius="lg">
-                  <AlertIcon />
-                  <AlertDescription fontSize="sm">
-                    {t('assistance.existingData', 'We have your appointment information. How can we help you?')}
-                  </AlertDescription>
-                </Alert>
-              ) : (
-                <Text 
-                  fontSize={{ base: "sm", md: "md" }}
-                  color="gray.600"
-                  textAlign="center"
-                >
-                  {t('assistance.description', 'Tell us how we can help you with your food bank check-in.')}
-                </Text>
-              )}
+          <ModalBody 
+            pb={{ base: 6, md: 6 }}
+            px={{ base: 5, md: 6 }}
+            pt={5}
+          >
+            <VStack spacing={5} align="stretch">
+              {/* Welcome Message Section */}
+              <Box>
+                {hasExistingData ? (
+                  <Alert 
+                    status="info" 
+                    borderRadius="lg"
+                    variant="left-accent"
+                    py={3}
+                  >
+                    <AlertIcon boxSize={5} />
+                    <AlertDescription fontSize={{ base: "sm", md: "md" }} fontWeight="500">
+                      {t('assistance.existingData', 'We have your appointment information. How can we help you?')}
+                    </AlertDescription>
+                  </Alert>
+                ) : (
+                  <Box
+                    bg="blue.50"
+                    border="1px solid"
+                    borderColor="blue.200"
+                    borderRadius="lg"
+                    p={4}
+                  >
+                    <Text 
+                      fontSize={{ base: "sm", md: "md" }}
+                      color="blue.800"
+                      fontWeight="500"
+                      lineHeight="tall"
+                    >
+                      {t('assistance.description', 'Tell us how we can help you with your food bank check-in.')}
+                    </Text>
+                  </Box>
+                )}
+              </Box>
 
+              {/* Contact Information Section */}
               {needsVerification && (
-                <>
-                  <FormControl>
-                    <FormLabel fontSize={{ base: "sm", md: "md" }} fontWeight="500">
-                      <HStack spacing={2}>
-                        <FiPhoneIcon />
-                        <Text>{t('assistance.phone', 'Phone Number')} *</Text>
-                      </HStack>
-                    </FormLabel>
-                    <Input
-                      type="tel"
-                      placeholder={t('assistance.phonePlaceholder', '(250) 123-4567')}
-                      value={formData.phoneNumber}
-                      onChange={(e) => handleInputChange('phoneNumber', e.target.value)}
-                      borderRadius="lg"
-                      borderColor="gray.300"
-                      _focus={{
-                        borderColor: 'blue.400',
-                        boxShadow: '0 0 0 1px rgba(66, 153, 225, 0.3)'
-                      }}
-                    />
-                  </FormControl>
+                <Box>
+                  <Text 
+                    fontSize={{ base: "sm", md: "md" }} 
+                    fontWeight="600" 
+                    color="gray.700"
+                    mb={3}
+                  >
+                    Contact Information
+                  </Text>
+                  <VStack spacing={4} align="stretch">
+                    <FormControl isRequired>
+                      <FormLabel 
+                        fontSize={{ base: "sm", md: "sm" }} 
+                        fontWeight="600" 
+                        mb={2}
+                        color="gray.700"
+                      >
+                        <HStack spacing={2} wrap="nowrap">
+                          <FiPhoneIcon size={16} />
+                          <Text whiteSpace="nowrap">{t('assistance.phone', 'Phone Number')}</Text>
+                        </HStack>
+                      </FormLabel>
+                      <Input
+                        type="tel"
+                        placeholder={t('assistance.phonePlaceholder', '(250) 123-4567')}
+                        value={formData.phoneNumber}
+                        onChange={(e) => handleInputChange('phoneNumber', e.target.value)}
+                        size="md"
+                        height="48px"
+                        borderRadius="lg"
+                        borderColor="gray.300"
+                        fontSize="md"
+                        _focus={{
+                          borderColor: 'blue.500',
+                          boxShadow: '0 0 0 3px rgba(66, 153, 225, 0.1)'
+                        }}
+                        _hover={{
+                          borderColor: 'gray.400'
+                        }}
+                      />
+                    </FormControl>
 
-                  <FormControl>
-                    <FormLabel fontSize={{ base: "sm", md: "md" }} fontWeight="500">
-                      <HStack spacing={2}>
-                        <FiUser />
-                        <Text>{t('assistance.lastName', 'Last Name')} *</Text>
-                      </HStack>
-                    </FormLabel>
-                    <Input
-                      type="text"
-                      placeholder={t('assistance.lastNamePlaceholder', 'Smith')}
-                      value={formData.lastName}
-                      onChange={(e) => handleInputChange('lastName', e.target.value)}
-                      borderRadius="lg"
-                      borderColor="gray.300"
-                      _focus={{
-                        borderColor: 'blue.400',
-                        boxShadow: '0 0 0 1px rgba(66, 153, 225, 0.3)'
-                      }}
-                    />
-                  </FormControl>
-                </>
+                    <FormControl isRequired>
+                      <FormLabel 
+                        fontSize={{ base: "sm", md: "sm" }} 
+                        fontWeight="600" 
+                        mb={2}
+                        color="gray.700"
+                      >
+                        <HStack spacing={2} wrap="nowrap">
+                          <FiUser size={16} />
+                          <Text whiteSpace="nowrap">{t('assistance.lastName', 'Last Name')}</Text>
+                        </HStack>
+                      </FormLabel>
+                      <Input
+                        type="text"
+                        placeholder={t('assistance.lastNamePlaceholder', 'Smith')}
+                        value={formData.lastName}
+                        onChange={(e) => handleInputChange('lastName', e.target.value)}
+                        size="md"
+                        height="48px"
+                        borderRadius="lg"
+                        borderColor="gray.300"
+                        fontSize="md"
+                        _focus={{
+                          borderColor: 'blue.500',
+                          boxShadow: '0 0 0 3px rgba(66, 153, 225, 0.1)'
+                        }}
+                        _hover={{
+                          borderColor: 'gray.400'
+                        }}
+                      />
+                    </FormControl>
+                  </VStack>
+                </Box>
               )}
 
-              <FormControl>
-                <FormLabel fontSize={{ base: "sm", md: "md" }} fontWeight="500">
-                  {t('assistance.email', 'Email (Optional)')}
-                </FormLabel>
-                <Input
-                  type="email"
-                  placeholder={t('assistance.emailPlaceholder', 'your.email@example.com')}
-                  value={formData.email}
-                  onChange={(e) => handleInputChange('email', e.target.value)}
-                  borderRadius="lg"
-                  borderColor="gray.300"
-                  _focus={{
-                    borderColor: 'blue.400',
-                    boxShadow: '0 0 0 1px rgba(66, 153, 225, 0.3)'
-                  }}
-                />
-              </FormControl>
-
-              <FormControl>
-                <FormLabel fontSize={{ base: "sm", md: "md" }} fontWeight="500">
-                  {t('assistance.message', 'Message')} *
-                </FormLabel>
-                <Textarea
-                  placeholder={t('assistance.messagePlaceholder', 'Describe how we can help you...')}
-                  value={formData.message}
-                  onChange={(e) => handleInputChange('message', e.target.value)}
-                  rows={4}
-                  borderRadius="lg"
-                  borderColor="gray.300"
-                  resize="vertical"
-                  _focus={{
-                    borderColor: 'blue.400',
-                    boxShadow: '0 0 0 1px rgba(66, 153, 225, 0.3)'
-                  }}
-                />
-              </FormControl>
-
-              <HStack spacing={3} pt={2}>
-                <Button
-                  variant="outline"
-                  onClick={handleCall}
-                  leftIcon={<FiPhone />}
-                  flex={1}
-                  height={{ base: "44px", md: "48px" }}
-                  fontSize={{ base: "sm", md: "md" }}
-                  borderRadius="lg"
-                  borderColor="gray.300"
+              {/* Message Section */}
+              <Box>
+                <Text 
+                  fontSize={{ base: "sm", md: "md" }} 
+                  fontWeight="600" 
                   color="gray.700"
-                  _hover={{
-                    bg: 'gray.50',
-                    borderColor: 'gray.400'
-                  }}
+                  mb={3}
                 >
-                  {t('assistance.call', 'Call Us')}
-                </Button>
-                
-                <Button
-                  colorScheme="blue"
-                  onClick={handleSubmit}
-                  isLoading={isSubmitting}
-                  loadingText={t('assistance.sending', 'Sending...')}
-                  flex={1}
-                  height={{ base: "44px", md: "48px" }}
-                  fontSize={{ base: "sm", md: "md" }}
-                  borderRadius="lg"
-                  fontWeight="500"
-                  _hover={{
-                    transform: 'translateY(-1px)',
-                    boxShadow: 'md'
-                  }}
-                >
-                  {t('assistance.send', 'Send Message')}
-                </Button>
-              </HStack>
+                  How Can We Help?
+                </Text>
+                <VStack spacing={4} align="stretch">
+                  <FormControl>
+                    <FormLabel 
+                      fontSize={{ base: "sm", md: "sm" }} 
+                      fontWeight="600" 
+                      mb={2}
+                      color="gray.700"
+                    >
+                      <HStack spacing={1} wrap="wrap" align="baseline">
+                        <Text whiteSpace="nowrap">{t('assistance.email', 'Email (Optional)')}</Text>
+                        <Text as="span" fontSize="xs" fontWeight="400" color="gray.500">
+                          - We'll use this to respond if you provide it
+                        </Text>
+                      </HStack>
+                    </FormLabel>
+                    <Input
+                      type="email"
+                      placeholder={t('assistance.emailPlaceholder', 'your.email@example.com')}
+                      value={formData.email}
+                      onChange={(e) => handleInputChange('email', e.target.value)}
+                      size="md"
+                      height="48px"
+                      borderRadius="lg"
+                      borderColor="gray.300"
+                      fontSize="md"
+                      _focus={{
+                        borderColor: 'blue.500',
+                        boxShadow: '0 0 0 3px rgba(66, 153, 225, 0.1)'
+                      }}
+                      _hover={{
+                        borderColor: 'gray.400'
+                      }}
+                    />
+                  </FormControl>
 
-              <Text 
-                fontSize="xs" 
-                color="gray.500" 
-                textAlign="center"
-                mt={2}
+                  <FormControl isRequired>
+                    <FormLabel 
+                      fontSize={{ base: "sm", md: "sm" }} 
+                      fontWeight="600" 
+                      mb={2}
+                      color="gray.700"
+                    >
+                      {t('assistance.message', 'Message')}
+                    </FormLabel>
+                    <Textarea
+                      placeholder={t('assistance.messagePlaceholder', 'Please describe how we can help you with your check-in...')}
+                      value={formData.message}
+                      onChange={(e) => handleInputChange('message', e.target.value)}
+                      rows={4}
+                      minH="120px"
+                      size="md"
+                      borderRadius="lg"
+                      borderColor="gray.300"
+                      fontSize="md"
+                      resize="vertical"
+                      _focus={{
+                        borderColor: 'blue.500',
+                        boxShadow: '0 0 0 3px rgba(66, 153, 225, 0.1)'
+                      }}
+                      _hover={{
+                        borderColor: 'gray.400'
+                      }}
+                    />
+                    <Text 
+                      fontSize="xs" 
+                      color="gray.500" 
+                      mt={1}
+                    >
+                      Please provide as much detail as possible so we can assist you better.
+                    </Text>
+                  </FormControl>
+                </VStack>
+              </Box>
+
+              {/* Action Buttons Section */}
+              <Box pt={2}>
+                <VStack spacing={3} align="stretch">
+                  <Button
+                    colorScheme="blue"
+                    onClick={handleSubmit}
+                    isLoading={isSubmitting}
+                    loadingText={t('assistance.sending', 'Sending...')}
+                    size="lg"
+                    height="48px"
+                    fontSize="md"
+                    fontWeight="600"
+                    borderRadius="lg"
+                    leftIcon={<FiHelpCircle size={18} />}
+                    _hover={{
+                      transform: 'translateY(-2px)',
+                      boxShadow: 'lg'
+                    }}
+                    _active={{
+                      transform: 'translateY(0)'
+                    }}
+                    isDisabled={!formData.message.trim() || (needsVerification && (!formData.phoneNumber.trim() || !formData.lastName.trim()))}
+                  >
+                    {t('assistance.send', 'Send Help Request')}
+                  </Button>
+                  
+                  <Divider borderColor="gray.200" />
+                  
+                  <Button
+                    variant="outline"
+                    onClick={handleCall}
+                    size="lg"
+                    height="48px"
+                    fontSize="md"
+                    fontWeight="600"
+                    borderRadius="lg"
+                    borderColor="gray.300"
+                    color="gray.700"
+                    bg="white"
+                    leftIcon={<FiPhone size={18} />}
+                    _hover={{
+                      bg: 'gray.50',
+                      borderColor: 'gray.400',
+                      transform: 'translateY(-1px)'
+                    }}
+                    _active={{
+                      transform: 'translateY(0)'
+                    }}
+                  >
+                    {t('assistance.call', 'Call Us Now')}
+                  </Button>
+                </VStack>
+              </Box>
+
+              {/* Footer Information */}
+              <Box
+                bg="gray.50"
+                borderRadius="lg"
+                p={4}
+                border="1px solid"
+                borderColor="gray.200"
               >
-                {t('assistance.disclaimer', 'We typically respond within 24 hours')}
-              </Text>
+                <VStack spacing={2} align="start">
+                  <HStack spacing={2} align="center">
+                    <Box
+                      as={FiInfo}
+                      boxSize={4}
+                      color="blue.500"
+                    />
+                    <Text 
+                      fontSize="xs" 
+                      color="gray.600" 
+                      fontWeight="500"
+                    >
+                      Response Time
+                    </Text>
+                  </HStack>
+                  <Text 
+                    fontSize="xs" 
+                    color="gray.600"
+                    pl={6}
+                    lineHeight="tall"
+                  >
+                    {t('assistance.disclaimer', 'We typically respond within 24 hours. For urgent assistance, please call us directly.')}
+                  </Text>
+                </VStack>
+              </Box>
             </VStack>
           </ModalBody>
         </ModalContent>

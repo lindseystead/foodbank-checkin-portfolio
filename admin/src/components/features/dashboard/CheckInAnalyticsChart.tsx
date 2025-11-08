@@ -76,7 +76,6 @@ const CheckInAnalyticsChart: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
   const [screenWidth, setScreenWidth] = useState(window.innerWidth);
-  const [isHovering, setIsHovering] = useState(false);
   const [csvStatus, setCsvStatus] = useState<{
     loading: boolean;
     hasData: boolean;
@@ -142,8 +141,16 @@ const CheckInAnalyticsChart: React.FC = () => {
   };
 
   // Fetch real-time analytics data from appointments
-  const fetchAnalytics = async () => {
+  // IMPORTANT: Includes ALL appointments including Pending status
+  // This ensures the dashboard shows all scheduled appointments
+  // OPTIMIZED: Only sets loading on initial load, not on every poll to prevent glitchy behavior
+  const fetchAnalytics = async (isInitialLoad: boolean = false) => {
     try {
+      // Only show loading spinner on initial load, not on every poll
+      if (isInitialLoad) {
+        setIsLoading(true);
+      }
+      
       const response = await fetch(getApiUrl('/checkin/appointments'), {
         signal: AbortSignal.timeout(10000) // 10 second timeout
       });
@@ -157,40 +164,129 @@ const CheckInAnalyticsChart: React.FC = () => {
       if (data.success && data.data) {
         const appointments = data.data;
         
-        // Calculate stats
-        // Collected: Completed successfully (green)
-        const completed = appointments.filter((a: any) => a.status === 'Collected' || a.status === 'Shipped').length;
-        // Pending: Waiting to be collected or rescheduled (blue)
-        const pending = appointments.filter((a: any) => a.status === 'Pending' || a.status === 'Rescheduled').length;
-        // No Show: Not collected or cancelled (orange)
-        const noShow = appointments.filter((a: any) => a.status === 'Not Collected' || a.status === 'Cancelled').length;
+        // IMPORTANT: Include ALL appointments including Pending status
+        // Filter to today's appointments only (for chart display)
+        const today = new Date();
+        const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
         
-        setStats({
-          totalCheckIns: appointments.length,
-          completed,
-          pending,
-          noShow,
-          averageWaitTime: 0,
-          currentHour: new Date().getHours(),
-          peakHour: 0,
-          peakCount: 0
+        // Filter to today's appointments (by appointmentTime, pickUpISO, or pickUpDate)
+        // IMPORTANT: Include ALL appointments for today, regardless of time
+        // This ensures pending appointments after 2 PM are included
+        const todayAppointments = appointments.filter((a: any) => {
+          // Try appointmentTime first (most reliable)
+          if (a.appointmentTime) {
+            try {
+              const apptDate = new Date(a.appointmentTime);
+              if (!isNaN(apptDate.getTime())) {
+                const apptDateStr = apptDate.toISOString().split('T')[0];
+                return apptDateStr === todayStr;
+              }
+            } catch (e) {
+              // Invalid date, continue to next check
+            }
+          }
+          // Try pickUpISO (timezone-aware ISO string)
+          if (a.pickUpISO) {
+            try {
+              const apptDate = new Date(a.pickUpISO);
+              if (!isNaN(apptDate.getTime())) {
+                const apptDateStr = apptDate.toISOString().split('T')[0];
+                return apptDateStr === todayStr;
+              }
+            } catch (e) {
+              // Invalid date, continue to next check
+            }
+          }
+          // Try pickUpDate (date string YYYY-MM-DD)
+          if (a.pickUpDate) {
+            return a.pickUpDate === todayStr;
+          }
+          return false;
         });
         
-        // Generate chart data
-        setChartData(generateTimeIntervalChartData(appointments));
+        // Calculate stats - IMPORTANT: Includes Pending appointments
+        // Colors must match summary panels:
+        // - Completed: Green (#8CAB6D) - Collected/Shipped
+        // - Pending: Teal Green (#2B7B8C) - Pending/Rescheduled (future appointments that haven't happened yet)
+        // - No Show: Red (#E76F51) - Not Collected/Cancelled (missed appointments)
+        const completed = todayAppointments.filter((a: any) => a.status === 'Collected' || a.status === 'Shipped').length;
+        // Pending: Waiting to be collected or rescheduled (teal green in chart, matches summary panel)
+        // IMPORTANT: This includes all Pending appointments for today (future appointments that haven't happened yet)
+        const pending = todayAppointments.filter((a: any) => a.status === 'Pending' || a.status === 'Rescheduled').length;
+        // No Show: Not collected or cancelled (red in chart, matches summary panel)
+        const noShow = todayAppointments.filter((a: any) => a.status === 'Not Collected' || a.status === 'Cancelled').length;
+        
+        // Generate new chart data
+        const newChartData = generateTimeIntervalChartData(todayAppointments);
+        
+        // OPTIMIZED: Only update state if data actually changed to prevent unnecessary re-renders
+        setStats(prevStats => {
+          const newStats = {
+            totalCheckIns: todayAppointments.length,
+            completed,
+            pending,
+            noShow,
+            averageWaitTime: 0,
+            currentHour: new Date().getHours(),
+            peakHour: 0,
+            peakCount: 0
+          };
+          
+          // Only update if stats changed
+          if (
+            prevStats.totalCheckIns !== newStats.totalCheckIns ||
+            prevStats.completed !== newStats.completed ||
+            prevStats.pending !== newStats.pending ||
+            prevStats.noShow !== newStats.noShow
+          ) {
+            return newStats;
+          }
+          return prevStats;
+        });
+        
+        // Only update chart data if it changed (prevent unnecessary re-renders)
+        setChartData(prevData => {
+          // Simple comparison - if lengths differ, data changed
+          if (prevData.length !== newChartData.length) {
+            return newChartData;
+          }
+          // Deep comparison for first and last items to catch changes
+          if (newChartData.length > 0 && prevData.length > 0) {
+            const firstChanged = 
+              prevData[0]?.completed !== newChartData[0]?.completed ||
+              prevData[0]?.pending !== newChartData[0]?.pending ||
+              prevData[0]?.noShow !== newChartData[0]?.noShow;
+            const lastChanged = 
+              prevData[prevData.length - 1]?.completed !== newChartData[newChartData.length - 1]?.completed ||
+              prevData[prevData.length - 1]?.pending !== newChartData[newChartData.length - 1]?.pending ||
+              prevData[prevData.length - 1]?.noShow !== newChartData[newChartData.length - 1]?.noShow;
+            
+            if (firstChanged || lastChanged) {
+              return newChartData;
+            }
+          }
+          return prevData; // No change, keep previous data
+        });
+        
         setLastUpdate(new Date());
       } else {
-        setStats({
-          totalCheckIns: 0,
-          completed: 0,
-          pending: 0,
-          noShow: 0,
-          averageWaitTime: 0,
-          currentHour: new Date().getHours(),
-          peakHour: 0,
-          peakCount: 0
+        // Only update if we don't have data yet
+        setStats(prevStats => {
+          if (prevStats.totalCheckIns === 0) {
+            return prevStats; // Already empty, no need to update
+          }
+          return {
+            totalCheckIns: 0,
+            completed: 0,
+            pending: 0,
+            noShow: 0,
+            averageWaitTime: 0,
+            currentHour: new Date().getHours(),
+            peakHour: 0,
+            peakCount: 0
+          };
         });
-        setChartData([]);
+        setChartData(prevData => prevData.length === 0 ? prevData : []);
         setLastUpdate(new Date());
       }
     } catch (error) {
@@ -201,32 +297,38 @@ const CheckInAnalyticsChart: React.FC = () => {
         console.error('Error fetching analytics:', error);
       }
       // Don't reset stats on connection errors, keep existing data
+      // Only update on non-connection errors
       if (!(error instanceof TypeError && error.message.includes('Failed to fetch'))) {
-        setStats({
-          totalCheckIns: 0,
-          completed: 0,
-          pending: 0,
-          noShow: 0,
-          averageWaitTime: 0,
-          currentHour: new Date().getHours(),
-          peakHour: 0,
-          peakCount: 0
+        setStats(prevStats => {
+          if (prevStats.totalCheckIns === 0) {
+            return prevStats; // Already empty
+          }
+          return {
+            totalCheckIns: 0,
+            completed: 0,
+            pending: 0,
+            noShow: 0,
+            averageWaitTime: 0,
+            currentHour: new Date().getHours(),
+            peakHour: 0,
+            peakCount: 0
+          };
         });
-        setChartData([]);
+        setChartData(prevData => prevData.length === 0 ? prevData : []);
         setLastUpdate(new Date());
       }
     } finally {
-      setIsLoading(false);
+      // Only set loading to false on initial load
+      if (isInitialLoad) {
+        setIsLoading(false);
+      }
     }
   };
 
 
   // Generate chart data based on CSV appointments (by pickup times)
+  // IMPORTANT: Always generates bars for ALL time slots from 8 AM to 8 PM, including future appointments
   const generateTimeIntervalChartData = (appointments: any[]): ChartData[] => {
-    if (!Array.isArray(appointments) || appointments.length === 0) {
-      return [];
-    }
-    
     const intervals: ChartData[] = [];
     
     // Build today's string once
@@ -236,43 +338,81 @@ const CheckInAnalyticsChart: React.FC = () => {
     const d = String(now.getDate()).padStart(2, '0');
     const todayStr = `${y}-${m}-${d}`;
 
-    // Accepted slots every 15 minutes between 08:00 and 20:00
-    const isWithinWindow = (dt: Date) => dt.getHours() >= 8 && dt.getHours() < 20;
+    // Accepted slots every 15 minutes between 08:00 and 20:00 (8 AM to 8 PM)
+    // IMPORTANT: Include hour 20 (8 PM) - use <= 20 instead of < 20
+    const isWithinWindow = (dt: Date) => {
+      const hour = dt.getHours();
+      return hour >= 8 && hour <= 20; // Include 8 PM (20:00)
+    };
 
-    // Generate full range from 8 AM to 8 PM (every 15 minutes)
+    // IMPORTANT: Generate full range from 8 AM to 8 PM (every 15 minutes)
+    // This ensures ALL time slots are shown, including future ones with pending appointments
     for (let hour = 8; hour <= 20; hour++) {
       for (let minute = 0; minute < 60; minute += 15) {
         // Build interval slot HH:MM
         // Count appointments for this exact time slot
+        // IMPORTANT: Include ALL appointments for today, including FUTURE appointments (pending status)
         const intervalAppointments = appointments.filter((appointment: any) => {
           // Determine a Date for this appointment using available fields
+          // Try multiple fields to ensure we catch all appointments, including future ones
           let dt: Date | null = null;
+          
+          // Try appointmentTime first (most reliable)
           if (appointment.appointmentTime) {
-            const t = new Date(appointment.appointmentTime);
-            if (!isNaN(t.getTime())) dt = t;
+            try {
+              const t = new Date(appointment.appointmentTime);
+              if (!isNaN(t.getTime())) dt = t;
+            } catch (e) {
+              // Invalid date, continue
+            }
           }
+          
+          // Try pickUpISO (timezone-aware ISO string)
           if (!dt && appointment.pickUpISO) {
-            const t = new Date(appointment.pickUpISO);
-            if (!isNaN(t.getTime())) dt = t;
+            try {
+              const t = new Date(appointment.pickUpISO);
+              if (!isNaN(t.getTime())) dt = t;
+            } catch (e) {
+              // Invalid date, continue
+            }
           }
+          
+          // Try pickUpTime + pickUpDate (fallback)
           if (!dt && typeof appointment.pickUpTime === 'string' && appointment.pickUpTime.match(/^\d{2}:\d{2}$/)) {
-            const t = new Date(`${todayStr}T${appointment.pickUpTime}:00`);
-            if (!isNaN(t.getTime())) dt = t;
+            try {
+              const dateStr = appointment.pickUpDate || todayStr;
+              const t = new Date(`${dateStr}T${appointment.pickUpTime}:00`);
+              if (!isNaN(t.getTime())) dt = t;
+            } catch (e) {
+              // Invalid date, continue
+            }
           }
 
           if (!dt) return false;
 
           // Only include today's appointments in the 08:00–20:00 window
-          const sameDay = dt.getFullYear() === now.getFullYear() && dt.getMonth() === now.getMonth() && dt.getDate() === now.getDate();
-          if (!sameDay || !isWithinWindow(dt)) return false;
+          // IMPORTANT: Include FUTURE appointments (appointments after current time)
+          const sameDay = dt.getFullYear() === now.getFullYear() && 
+                         dt.getMonth() === now.getMonth() && 
+                         dt.getDate() === now.getDate();
+          
+          if (!sameDay) return false;
+          
+          // Check if within time window (8 AM to 8 PM inclusive)
+          if (!isWithinWindow(dt)) return false;
 
           // Exact match for 15-minute slots
+          // IMPORTANT: This includes FUTURE appointments (pending status) - no time-based filtering
           return dt.getHours() === hour && dt.getMinutes() === minute;
         });
         
-        // Count by status with proper color mapping
-        // Green = Collected/Shipped, Blue = Pending/Rescheduled, Orange = Not Collected/Cancelled
+        // Count by status with proper color mapping (must match summary panels)
+        // IMPORTANT: Colors must match summary panels:
+        // - Green = Collected/Shipped (completed)
+        // - Teal Green = Pending/Rescheduled (pending - FUTURE appointments that haven't happened yet)
+        // - Red = Not Collected/Cancelled (no show - missed appointments)
         const completed = intervalAppointments.filter(a => a.status === 'Collected' || a.status === 'Shipped').length;
+        // Pending: FUTURE appointments that haven't happened yet (teal green in chart)
         const pending = intervalAppointments.filter(a => a.status === 'Pending' || a.status === 'Rescheduled').length;
         const noShow = intervalAppointments.filter(a => a.status === 'Not Collected' || a.status === 'Cancelled').length;
         
@@ -282,6 +422,8 @@ const CheckInAnalyticsChart: React.FC = () => {
         const ampm = hour < 12 ? 'AM' : 'PM';
         const timeLabel = `${displayHour}:${minute.toString().padStart(2, '0')} ${ampm}`;
         
+        // IMPORTANT: Always create chart data entry for ALL time slots, even if empty
+        // This ensures future time slots with pending appointments are displayed
         intervals.push({
           time: `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`,
           timeLabel,
@@ -296,21 +438,78 @@ const CheckInAnalyticsChart: React.FC = () => {
       }
     }
     
+    // IMPORTANT: Return ALL intervals, including future ones with pending appointments
     return intervals;
   };
 
-  // Real-time updates every 15 seconds, but pause when hovering over chart
+  /**
+   * Polling setup with Page Visibility API
+   * 
+   * Best Practices Implemented:
+   * - Page Visibility API: Pauses polling when browser tab is hidden
+   * - Real-time Updates: 30 second interval for responsive dashboard
+   * - Smart Conditions: Only polls when tab is visible
+   * - Proper Cleanup: Clears intervals and removes event listeners on unmount
+   * - State Management: Prevents race conditions with proper loading states
+   * 
+   * IMPORTANT: Removed hover pause to prevent glitchy behavior.
+   * Chart updates smoothly without interrupting user interaction.
+   * 
+   * @see {@link https://developer.mozilla.org/en-US/docs/Web/API/Page_Visibility_API} Page Visibility API
+   */
   useEffect(() => {
+    // Initial fetch with loading state
     fetchCsvStatus();
-    fetchAnalytics();
-    const interval = setInterval(() => {
-      if (!isHovering) {
+    fetchAnalytics(true); // Pass true for initial load to show loading spinner
+    
+    let interval: NodeJS.Timeout | null = null;
+    let isVisible = !document.hidden;
+    let isFetching = false; // Prevent concurrent fetches
+    
+    const startPolling = () => {
+      if (interval) clearInterval(interval);
+      interval = setInterval(() => {
+        // Only poll if tab is visible and not already fetching
+        if (!document.hidden && !isFetching) {
+          isFetching = true;
+          // OPTIMIZED: Don't show loading spinner on polls, only on initial load
+          Promise.all([fetchCsvStatus(), fetchAnalytics(false)])
+            .finally(() => {
+              isFetching = false;
+            });
+        }
+      }, 30000); // Poll every 30 seconds for real-time updates
+    };
+    
+    const handleVisibilityChange = () => {
+      isVisible = !document.hidden;
+      if (isVisible) {
+        // Tab became visible - fetch immediately (without loading spinner) and start polling
         fetchCsvStatus();
-        fetchAnalytics();
+        fetchAnalytics(false); // Don't show loading spinner on visibility change
+        startPolling();
+      } else {
+        // Tab hidden - stop polling
+        if (interval) {
+          clearInterval(interval);
+          interval = null;
+        }
       }
-    }, 20000); // 20 seconds for efficiency
-    return () => clearInterval(interval);
-  }, [isHovering]);
+    };
+    
+    // Start polling if visible
+    if (isVisible) {
+      startPolling();
+    }
+    
+    // Listen for visibility changes
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    
+    return () => {
+      if (interval) clearInterval(interval);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, []); // Empty dependency array - only run once on mount
 
   // Track screen width changes for responsive chart
   useEffect(() => {
@@ -369,7 +568,7 @@ const CheckInAnalyticsChart: React.FC = () => {
               
               <VStack align="center" spacing={2} minW="70px">
                 <Box
-                  bg="cofb.blue"
+                  bg="#2B7B8C"
                   borderRadius="full"
                   p={2}
                   boxShadow="md"
@@ -378,14 +577,14 @@ const CheckInAnalyticsChart: React.FC = () => {
                     {pending}
                   </Text>
                 </Box>
-                <Text fontSize="xs" color="#1E5A6B" fontWeight="600" textAlign="center">
+                <Text fontSize="xs" color="#2B7B8C" fontWeight="600" textAlign="center">
                   📅 Pending
                 </Text>
               </VStack>
               
               <VStack align="center" spacing={2} minW="70px">
                 <Box
-                  bg="cofb.orange"
+                  bg="#E76F51"
                   borderRadius="full"
                   p={2}
                   boxShadow="md"
@@ -525,18 +724,18 @@ const CheckInAnalyticsChart: React.FC = () => {
               p={4} 
               borderRadius="xl" 
               border="2px solid" 
-              borderColor={hasNoData ? "gray.200" : "#F4A261"} 
+              borderColor={hasNoData ? "gray.200" : "#2B7B8C"} 
               boxShadow={hasNoData ? "sm" : "lg"}
               transition="all 0.2s"
             >
               <VStack spacing={2}>
-                <Text fontSize={{ base: "xs", sm: "sm" }} color={hasNoData ? "neutral.500" : "#F4A261"} fontWeight="600">
+                <Text fontSize={{ base: "xs", sm: "sm" }} color={hasNoData ? "neutral.500" : "#2B7B8C"} fontWeight="600">
                   ⏳ Pending Check-ins
                 </Text>
-                <Text fontSize={{ base: "xl", sm: "2xl" }} color={hasNoData ? "neutral.400" : "#F4A261"} fontWeight="bold">
+                <Text fontSize={{ base: "xl", sm: "2xl" }} color={hasNoData ? "neutral.400" : "#2B7B8C"} fontWeight="bold">
                   {stats.pending}
                 </Text>
-                <Text fontSize={{ base: "xs", sm: "xs" }} color={hasNoData ? "neutral.400" : "#F4A261"}>
+                <Text fontSize={{ base: "xs", sm: "xs" }} color={hasNoData ? "neutral.400" : "#2B7B8C"}>
                   {hasNoData ? "No data" : "Waiting"}
                 </Text>
               </VStack>
@@ -685,8 +884,6 @@ const CheckInAnalyticsChart: React.FC = () => {
                 </Center>
               ) : (
                 <Box
-                  onMouseEnter={() => setIsHovering(true)}
-                  onMouseLeave={() => setIsHovering(false)}
                   width="100%" 
                   height="100%"
                 >
@@ -715,9 +912,9 @@ const CheckInAnalyticsChart: React.FC = () => {
                       <stop offset="100%" stopColor="#1E5A6B" />
                     </linearGradient>
                     <linearGradient id="noShowGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#F4A261" />
-                      <stop offset="50%" stopColor="#F18F4A" />
-                      <stop offset="100%" stopColor="#E76F51" />
+                      <stop offset="0%" stopColor="#E76F51" />
+                      <stop offset="50%" stopColor="#D65A4A" />
+                      <stop offset="100%" stopColor="#C44A3A" />
                     </linearGradient>
                     <filter id="glow">
                       <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
@@ -805,7 +1002,7 @@ const CheckInAnalyticsChart: React.FC = () => {
                     fill="url(#pendingGradient)"
                     name="📅 Pending Appointments" 
                     radius={[12, 12, 0, 0]}
-                    stroke="#1B4A54"
+                    stroke="#1E5A6B"
                     strokeWidth={3}
                     filter="url(#shadow)"
                     style={{ 
@@ -830,7 +1027,7 @@ const CheckInAnalyticsChart: React.FC = () => {
                     fill="url(#noShowGradient)"
                     name="❌ No Show Appointments" 
                     radius={[12, 12, 0, 0]}
-                    stroke="#D07433"
+                    stroke="#C44A3A"
                     strokeWidth={3}
                     filter="url(#shadow)"
                     style={{ 

@@ -1,12 +1,23 @@
 /**
  * @fileoverview Help request routes for Foodbank Check-In and Appointment System backend API
  * 
- * This module handles help request operations from clients
+ * This module handles help request operations from clients. It provides endpoints
+ * for submitting help requests (public), retrieving all help requests (admin),
+ * and updating help request status (admin).
+ * 
+ * Best Practices:
+ * - Public endpoint for client submissions (no auth required)
+ * - Admin endpoints protected by authentication middleware
+ * - Rate limiting applied at server level (200 req/15min per IP)
+ * - Frontend should implement smart polling (30s intervals, Page Visibility API)
  * 
  * @author Lindsey D. Stead
  * @version 1.0.0
  * @since 2025-10-20
  * @license Proprietary - see LICENSE file for details
+ * 
+ * @see {@link ../middleware/auth.ts} Authentication middleware
+ * @see {@link https://developer.mozilla.org/en-US/docs/Web/API/Page_Visibility_API} Page Visibility API
  */
 
 import { Router } from 'express';

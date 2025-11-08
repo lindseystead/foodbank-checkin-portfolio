@@ -1,9 +1,17 @@
 /**
  * @fileoverview Supabase client configuration and security utilities for Foodbank Check-In and Appointment System admin panel
  * 
+ * IMPORTANT: This module uses Supabase ONLY for authentication services.
+ * We do NOT use Supabase database tables - all application data is stored in the backend API.
+ * 
  * This module configures the Supabase client with security best practices including PKCE flow,
  * automatic token refresh, and session persistence. It also provides utility functions for
  * error handling, input validation, and security sanitization.
+ * 
+ * Supabase is used solely for:
+ * - User authentication (email/password login)
+ * - Session and token management
+ * - Password reset functionality
  * 
  * @author Lindsey D. Stead
  * @version 1.0.0
@@ -14,33 +22,40 @@
  */
 
 import { createClient } from '@supabase/supabase-js'
+import { logger } from '../utils/logger'
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 
-
-// Validate required environment variables
 if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error(
     'Missing Supabase environment variables. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in your .env file.'
   );
 }
 
-// Create Supabase client with security best practices
-// Optimized for faster initial load
+/**
+ * Supabase client configuration following best practices:
+ * - PKCE flow for enhanced security
+ * - Automatic token refresh
+ * - Session persistence using localStorage
+ * - Proper error handling
+ * 
+ * @see {@link https://supabase.com/docs/guides/auth} Supabase Auth Documentation
+ */
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
+    // Enable automatic token refresh (recommended)
     autoRefreshToken: true,
+    // Persist session in localStorage (default behavior)
     persistSession: true,
-    detectSessionInUrl: false, // Disabled for login page - not needed
-    flowType: 'pkce', // Use PKCE flow for enhanced security
-    storage: typeof window !== 'undefined' ? window.localStorage : undefined,
-    storageKey: 'sb-auth-token',
-    // Use memory storage first for faster checks
-    debug: false,
+    // Disable URL-based session detection for admin panel (not using OAuth redirects)
+    detectSessionInUrl: false,
+    // Use PKCE flow for enhanced security (recommended for all auth flows)
+    flowType: 'pkce',
+    // Use default storage (localStorage) - Supabase handles this automatically
+    // Don't override storageKey - use Supabase's default for compatibility
+    debug: import.meta.env.DEV, // Enable debug in development only
   },
-  // Disable realtime on login page - not needed
-  realtime: undefined,
   global: {
     headers: {
       'X-Client-Info': 'cofb-admin-panel'
@@ -48,11 +63,10 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   }
 })
 
-// Professional error handling with security considerations
 export const handleSupabaseError = (error: any) => {
-  console.error('Supabase error:', error)
+  logger.error('Supabase error:', error)
   
-  // Don't expose internal error details in production
+  // Hide error details in production
   if (import.meta.env.PROD) {
     if (error.code === 'PGRST301') {
       return 'Authentication required. Please log in.'
@@ -69,13 +83,11 @@ export const handleSupabaseError = (error: any) => {
     return 'An error occurred. Please try again.'
   }
   
-  // In development, show more detailed errors
+  // Dev mode - show full error
   return error.message || 'An unexpected error occurred.'
 }
 
-// Security utility functions
 export const sanitizeInput = (input: string): string => {
-  // Basic input sanitization
   return input.trim().replace(/[<>]/g, '')
 }
 
@@ -85,7 +97,7 @@ export const validateEmail = (email: string): boolean => {
 }
 
 export const validatePassword = (password: string): boolean => {
-  // Minimum 8 characters, at least one letter and one number
+  // 8+ chars, at least one letter and one number
   const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*?&]{8,}$/
   return passwordRegex.test(password)
 }

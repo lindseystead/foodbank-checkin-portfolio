@@ -52,6 +52,19 @@ const CSVStatus: React.FC<CSVStatusProps> = ({ onRefresh }) => {
   const bgColor = 'white'; // Fixed white background
   const borderColor = 'gray.300'; // More visible border
 
+  /**
+   * Polling setup with Page Visibility API
+   * 
+   * Best Practices Implemented:
+   * - Page Visibility API: Pauses polling when browser tab is hidden
+   * - Conditional Polling: Only polls when data exists (reduces unnecessary calls)
+   * - Event-Driven: Immediate refresh on CSV import events
+   * - Optimized Interval: 2 minutes (reduced from 30s to minimize API calls)
+   * - Smart Conditions: Only polls when tab is visible and data exists
+   * - Proper Cleanup: Clears intervals and removes event listeners on unmount
+   * 
+   * @see {@link https://developer.mozilla.org/en-US/docs/Web/API/Page_Visibility_API} Page Visibility API
+   */
   useEffect(() => {
     fetchStatus();
     
@@ -62,17 +75,47 @@ const CSVStatus: React.FC<CSVStatusProps> = ({ onRefresh }) => {
     
     window.addEventListener('csvDataImported', handleCSVImport);
     
-    // Only start polling if we have data or are loading
+    // Only start polling if we have data or are loading, and tab is visible
     let interval: NodeJS.Timeout | null = null;
+    let isVisible = !document.hidden;
     
-    if (status?.data?.present || loading) {
-      // Auto-refresh every 30 seconds ONLY when data exists
-      interval = setInterval(fetchStatus, 30000);
-    }
+    const startPolling = () => {
+      if (interval) clearInterval(interval);
+      if ((status?.data?.present || loading) && isVisible) {
+        // Auto-refresh every 2 minutes ONLY when data exists and tab is visible
+        interval = setInterval(() => {
+          if (!document.hidden) {
+            fetchStatus();
+          }
+        }, 120000); // Poll every 2 minutes (optimized to reduce API calls by 75%)
+      }
+    };
+    
+    const handleVisibilityChange = () => {
+      isVisible = !document.hidden;
+      if (isVisible) {
+        // Tab became visible - fetch immediately and start polling
+        fetchStatus();
+        startPolling();
+      } else {
+        // Tab hidden - stop polling
+        if (interval) {
+          clearInterval(interval);
+          interval = null;
+        }
+      }
+    };
+    
+    // Start polling if conditions are met
+    startPolling();
+    
+    // Listen for visibility changes
+    document.addEventListener('visibilitychange', handleVisibilityChange);
     
     return () => {
       window.removeEventListener('csvDataImported', handleCSVImport);
       if (interval) clearInterval(interval);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, [status?.data?.present, loading]); // Re-run when data presence changes
 
