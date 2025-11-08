@@ -6,7 +6,6 @@
 
 > **A complete full-stack system designed from the ground up as my Bachelor of Computing Sciences capstone project at Thompson Rivers University (TRU). Built solo using agile methodologies, this system helps food bank clients check in faster using QR codes and their own tablets or mobile devices.**
 
-🌐 **Live System**: [https://foodbank-checkin-tan.vercel.app/](https://foodbank-checkin-tan.vercel.app/) (Client Check-In) | [https://foodbank-checkin.vercel.app/login](https://foodbank-checkin.vercel.app/login) (Admin Dashboard)
 
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-20232A?logo=react&logoColor=61DAFB)](https://reactjs.org/)
