@@ -15,6 +15,8 @@
 [![Code Quality](https://img.shields.io/badge/Code-Quality-blue)](README.md#-technical-excellence)
 [![Tests](https://img.shields.io/badge/Tests-Vitest%20%7C%20Cypress-green)](README.md#-testing)
 
+![Visitors](https://api.visitorbadge.io/api/visitors?path=lindseystead/foodbank-checkin-portfolio&label=Views&labelColor=%23000000&countColor=%23d9e3f0&style=flat)
+
 **A complete full-stack system designed and built solo as a software engineering capstone project. Production-ready and available for food banks across Canada. The architecture is CSV-first and Link2Feed-ready, scalable, and integrates with Link2Feed's RESTful API. Can be adapted for other organizations who need check-in and appointment systems. Enables clients to check in faster using QR codes displayed at the entrance, which they scan with their tablets or mobile devices.**
 
 🌐 **Live Client Check-In**: [https://foodbank-checkin-tan.vercel.app/](https://foodbank-checkin-tan.vercel.app/)  
