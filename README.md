@@ -887,12 +887,6 @@ Set these environment variables in your deployment platform (Vercel, Railway, et
 - **Build Process**: TypeScript compilation + Vite build optimization
 - **Monitoring**: Vercel Analytics and Speed Insights for performance tracking
 
-### GitHub Actions Ready
-The project structure supports CI/CD integration:
-- Automated testing on pull requests
-- Build verification before deployment
-- Linting and type checking
-- Test coverage reporting
 
 ---
 
@@ -963,7 +957,7 @@ This system was originally designed as a capstone project at Thompson Rivers Uni
 ---
 
 ## ✨ Why This Project Stands Out
-- **Solo Development**: Designed and built entirely by me from the ground up as a capstone project
+- **Solo Development**: Designed and built entirely by me from the ground up as a capstone project with many challenging moments along the way 
 - **Agile Methodology**: Used agile development practices throughout the project lifecycle
 - **Real Production System**: Production-ready system ready for deployment and daily use
 - **Full Lifecycle Management**: From concept, system design and modeling, prototyping, to capstone to production
@@ -990,10 +984,10 @@ This system was originally designed as a capstone project at Thompson Rivers Uni
 ## 🙏 Acknowledgments
 
 - **Dr. Kevin O'Neil** - Software Engineering Professor and Capstone Supervisor at Thompson Rivers University, for his guidance, mentorship, and support throughout the capstone project development
-- **Food bank organizations** who inspired this project and provided real-world context
-- **Thompson Rivers University** for academic guidance and the capstone opportunity
+- **Food bank organizations and Trevor Freeman from the Kelowna Gospel Mission** who first inspired this project and provided real-world context
+- **Thompson Rivers University** for academic guidance and the capstone and degree completion opportunity
 - **React & TypeScript communities** for amazing tooling and documentation
-- **All food bank volunteers** who serve their community
+- **All food bank volunteers and staff** who serve their communitieis and help fight to fight hunger everyday!!
 
 ---
 
