@@ -2,7 +2,7 @@
 
 > **Transforming Food Bank Operations: From Paper Chaos to Digital Efficiency**
 
-🌐 **Live System**: [https://www.foodbank-checkin.ca/](https://www.foodbank-checkin.ca/)
+🌐 **Live System**: [https://foodbank-checkin-tan.vercel.app/](https://foodbank-checkin-tan.vercel.app/) (Client Check-In) | [https://foodbank-checkin.vercel.app/login](https://foodbank-checkin.vercel.app/login) (Admin Dashboard)
 
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-20232A?logo=react&logoColor=61DAFB)](https://reactjs.org/)
@@ -44,8 +44,8 @@ Each frontend component has its own README with detailed setup instructions. See
 ## 🎮 Try It Out
 
 **Live Demo Available:**
-- **Client Check-In**: [https://www.foodbank-checkin.ca/](https://www.foodbank-checkin.ca/)
-- **Admin Dashboard**: [https://www.foodbank-checkin.ca/admin](https://www.foodbank-checkin.ca/admin)
+- **Client Check-In**: [https://foodbank-checkin-tan.vercel.app/](https://foodbank-checkin-tan.vercel.app/)
+- **Admin Dashboard**: [https://foodbank-checkin.vercel.app/login](https://foodbank-checkin.vercel.app/login)
   - **Test Admin Credentials for Supabase Authentication:**
     - Email: `admin@example.com`
     - Password: `testing123`
@@ -56,7 +56,7 @@ To test the complete check-in flow, you'll need to:
 1. **Download the sample CSV file**: [`docs/sample-appointments.csv`](docs/sample-appointments.csv)
 2. **Update the dates**: Change all `Pick Up Date` values to match **today's date** (format: `YYYY-MM-DD @ HH:MM AM/PM`)
    - Example: If today is November 7, 2025, change `2025-04-14 @ 9:00 AM` to `2025-11-07 @ 9:00 AM`
-   - The system validates check-ins based on today's date, so appointments must be for today
+   - The system validates check-ins based on today's date, so appointments must be for today to populate the check-ins for that day and it must be during the correct hours for the system validation work 
 3. **Upload to Admin Dashboard**: Log in to the admin dashboard and upload the updated CSV file
 4. **Test Client Check-In**: Use the phone numbers and last names from the CSV to test the client check-in flow
 
