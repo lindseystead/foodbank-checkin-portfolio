@@ -198,7 +198,7 @@ This is a standalone component that integrates seamlessly with your existing Lin
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                    CLIENT CHECK-IN APP                      │
-│  • Multilingual UI (3 languages)                           │
+│  • Multilingual UI (7 languages)                           │
 │  • Phone number + last name lookup                        │
 │  • Special dietary requests                               │
 │  • Instant next appointment generation                     │
