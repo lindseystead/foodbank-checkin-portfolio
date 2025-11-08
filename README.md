@@ -25,10 +25,6 @@ This repository contains the **frontend applications** for the Foodbank Check-In
 1. **Client App** (`/client`) - React/TypeScript frontend for client check-in (7,515 lines)
 2. **Admin Panel** (`/admin`) - React/TypeScript frontend for staff management (14,113 lines)
 
-Each frontend component has its own README with detailed setup instructions. See:
-- [`client/README.md`](client/README.md) for client app setup
-- [`admin/README.md`](admin/README.md) for admin panel setup
-
 **Frontend Tech Stack:** React 18, TypeScript, Chakra UI, React Router, i18next, Vercel
 
 **📄 Sample CSV File:** See [`docs/sample-appointments.csv`](docs/sample-appointments.csv) for an example CSV file format compatible with Link2Feed exports. All data is sanitized/anonymized for demonstration purposes.
