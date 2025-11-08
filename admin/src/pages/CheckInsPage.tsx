@@ -60,7 +60,6 @@ import {
 import { formatDistanceToNow } from 'date-fns';
 import { formatToVancouverTime, formatToVancouverTimeOnly } from '../utils/timeFormatter';
 import { formatPhoneNumber } from '../common/utils/phoneFormatter';
-import { getApiUrl } from '../common/apiConfig';
 import { api } from '../lib/api';
 import { printTicket } from '../utils/printTicket';
 import { getStatusColorHex } from '../common/utils/statusColors';
