@@ -1,24 +1,51 @@
-PROPRIETARY SOFTWARE - ALL RIGHTS RESERVED
+COPYRIGHT NOTICE - ALL RIGHTS RESERVED
 
-Copyright © 2025 Lindsey D. Stead
+Copyright © 2025 Lindsey D. Stead. All Rights Reserved.
 
-This repository contains proprietary software developed as a capstone project
-at Thompson Rivers University. This is a private repository containing the
-complete full-stack application (frontend applications and backend API).
+This repository contains proprietary software originally designed as a capstone project
+at Thompson Rivers University. This code is displayed for PORTFOLIO PURPOSES ONLY.
 
-ALL RIGHTS RESERVED:
-You may not copy, modify, distribute, sublicense, or use this software or its
-designs for any purpose without prior written consent from the copyright holder.
+LEGAL NOTICE:
+This software and all associated code, designs, and documentation are the 
+exclusive intellectual property of Lindsey D. Stead. No license is granted 
+for use, copying, modification, distribution, or commercial exploitation 
+of this software.
 
-This software is:
-- Proprietary and confidential
-- Not licensed under any open-source license
-- Protected by copyright law
-- Intended for authorized use only
+PERMITTED USE:
+✅ Portfolio review and code inspection for evaluation purposes
+✅ Educational learning and reference
+✅ Personal study and understanding
 
-For inquiries regarding licensing, collaboration, or commercial use, please contact:
+PROHIBITED USE:
+❌ Commercial use or deployment
+❌ Copying, modifying, or distributing the code
+❌ Creating derivative works
+❌ Using in production systems
+❌ Reselling or sublicensing
+❌ Any use without explicit written permission
+
+COMMERCIAL LICENSING FOR FOOD BANKS:
+This software is available for licensing to food bank organizations. Each food bank
+requires a separate commercial license. For licensing inquiries, please contact:
 lindsey@lifesavertech.ca
 
-Unauthorized copying, distribution, or use is strictly prohibited and may result
-in legal action.
+Commercial licensing includes:
+- Production deployment rights for licensed food bank
+- Commercial use authorization
+- Support and maintenance options
+- Custom development services
+- Backend API access (not included in this repository)
+- Multi-location support (per food bank organization)
+- PIPEDA-compliant deployment options (for Canadian food banks)
+- Canadian data residency options
 
+UNAUTHORIZED USE:
+Unauthorized copying, distribution, or use of this software is strictly 
+prohibited and may result in legal action. This software is protected by 
+copyright law and international treaties.
+
+By viewing or accessing this code, you acknowledge that you understand and 
+agree to these terms. If you do not agree, you must not use, copy, or 
+distribute any part of this software.
+
+For licensing inquiries: lindsey@lifesavertech.ca

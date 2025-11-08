@@ -37,7 +37,7 @@ The client application guides users through a 5-step check-in process:
 ### Prerequisites
 
 - Node.js 18+ and npm
-- Backend API running (see backend folder)
+- Backend API running (backend not included in this repository)
 
 ### Installation
 

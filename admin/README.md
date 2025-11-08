@@ -41,7 +41,7 @@ The admin dashboard is a secure, real-time management interface that enables sta
 ### Prerequisites
 
 - Node.js 18+ and npm
-- Backend API running (see backend folder)
+- Backend API running (backend not included in this repository)
 - Supabase project configured
 
 ### Installation
