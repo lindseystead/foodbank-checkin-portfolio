@@ -25,7 +25,7 @@ This repository contains the **frontend applications** for the Foodbank Check-In
 1. **Client App** (`/client`) - React/TypeScript frontend for client check-in (7,515 lines)
 2. **Admin Panel** (`/admin`) - React/TypeScript frontend for staff management (14,113 lines)
 
-**Frontend Tech Stack:** React 18, TypeScript, Chakra UI, React Router, i18next, Vercel
+**Frontend Tech Stack:** React 18, TypeScript, Chakra UI, React Router, i18next, Vercel  
 
 **📄 Sample CSV File:** See [`docs/sample-appointments.csv`](docs/sample-appointments.csv) for an example CSV file format compatible with Link2Feed exports. All data is sanitized/anonymized for demonstration purposes.
 
@@ -192,7 +192,7 @@ This system was designed with a **CSV-first architecture** that enables immediat
 
 ## 🎯 Complete System Features
 
-### Client Check-In Workflow - QR Code Based
+### Client Check-In Application - QR Code Based Workflow
 
 **How It Works:**
 1. Food bank displays QR code at the front entrance
@@ -204,83 +204,349 @@ This system was designed with a **CSV-first architecture** that enables immediat
 
 This approach eliminates the need for dedicated kiosk hardware and allows clients to use their own devices, making the system more accessible and cost-effective.
 
-### For Clients - Complete Check-In Flow
+#### **Page 1: Landing & Language Selection**
+- Welcome page with professional branding
+- Language selection interface with 7 languages: English, French, Spanish, Chinese, Hindi, Arabic, Punjabi
+- Language preference persists throughout entire session
+- Responsive design optimized for tablets and mobile devices
+- Clear call-to-action to begin check-in
 
-**Page 1: Landing & Language Selection**
-- Welcome page with language selection
-- 7 languages: English, French, Spanish, Chinese, Hindi, Arabic, Punjabi
-- Persists language choice throughout session
+#### **Page 2: Initial Check-In**
+- Phone number input with automatic formatting (e.g., (250) 555-1234)
+- Last name input for appointment verification
+- Real-time form validation with helpful error messages
+- Client lookup integration with backend API
+- **"Need Help?" Assistance Button**: Always visible on every page for client support
+- Progress indicator showing step 1 of 5
+- Handles appointment verification errors gracefully
 
-**Page 2: Initial Check-In** 
-- Enter phone number (auto-formatted)
-- Enter last name
-- Real-time validation
-- **Assistance Button**: "Need Help?" button always visible for support
+#### **Page 3: Special Dietary Requests**
+- **Multi-select dietary preferences** with visual icons:
+  - Vegetarian (carrot icon)
+  - Vegan (leaf icon)
+  - Gluten-free (bread icon)
+  - Dairy-free
+  - Halal (mosque icon)
+  - Kosher (synagogue icon)
+- **Allergies text field** for detailed allergy information
+- **Unwanted foods** text field for food preferences
+- **Mobility assistance checkbox** for accessibility needs
+- **Diaper size selection** dropdown for Tiny Bundles program (Newborn, Size 1-7)
+- **Additional notes** textarea for any other special requests
+- Pre-populates dietary restrictions from CSV data if available
+- **Assistance Button** available on every page
+- Progress indicator showing step 3 of 5
 
-**Page 3: Special Dietary Requests**
-- Multi-select dietary preferences (vegetarian, vegan, gluten-free, dairy-free, halal, kosher)
-- Allergies tracking
-- Unwanted foods
-- Mobility assistance checkbox
-- Diaper size selection (Tiny Bundles program)
+#### **Page 4: Appointment Details**
+- Displays current appointment date and time in formatted, readable format
+- Shows appointment information (e.g., "Monday, October 27th at 9:00 AM")
+- **Appointment rescheduling capability** - clients can request to reschedule
+- Rescheduling modal with date picker and time slot selection
+- Valid time slots: 9:00 AM - 2:45 PM in 15-minute increments
+- System features display (privacy, speed, multilingual support)
+- Important notices about arrival times and policies
+- **Assistance Button** available
+- Progress indicator showing step 4 of 5
+
+#### **Page 5: Confirmation**
+- Displays next appointment (automatically scheduled 21 days from today)
+- Formatted date display (e.g., "Monday, November 17th at 10:00 AM")
+- Success confirmation message
+- **Auto-redirect after 10 seconds** back to landing page for next client
+- Completion status indicator
+- Visual confirmation with checkmark icon
+- Progress indicator showing step 5 of 5 (complete)
+
+#### **Client App Additional Features:**
+- **Help Request System**: Clients can request assistance from any page
+- **Session Management**: Data persists across pages using sessionStorage
+- **Error Handling**: Graceful error handling with user-friendly messages
+- **Mobile-First Design**: Optimized for tablets and mobile devices
+- **Accessibility**: WCAG-compliant with keyboard navigation and screen reader support
+- **Internationalization**: All text translated into 7 languages
+- **Responsive Layout**: Adapts to different screen sizes seamlessly
+
+---
+
+### Admin Dashboard - Complete Management System
+
+#### **Dashboard Page** - Main Operations Hub with 5 Tabs:
+
+**1. Analytics Tab**
+- **Real-time bar charts** showing check-in status distribution:
+  - Collected (green) - completed check-ins
+  - Pending (blue) - awaiting completion
+  - Not Collected (orange) - missed appointments
+- **Hourly breakdown** of check-ins throughout the day (8 AM - 8 PM)
+- **Dashboard statistics**:
+  - Total check-ins count
+  - Completed count
+  - Pending count
+  - No-show count
+  - Average wait time calculation
+  - Peak hour identification
+- **CSV data status indicator** showing if today's data is loaded
+- **Real-time updates** with automatic refresh (30-120 second intervals)
+- **Responsive charts** that adapt to screen size
+
+**2. Recent Check-Ins Tab**
+- **Live feed** of all check-in activity
+- **Status badges** with color coding (Pending, Collected, Not Collected, etc.)
+- **Completion time** display showing how long each check-in took
+- **Filter by status** dropdown (All, Pending, Collected, Not Collected)
+- **Real-time updates** as new check-ins occur
+- **Client information** display (name, phone, appointment time)
+- **Quick actions** available for each check-in
+
+**3. Find Clients Tab**
+- **Instant search** across all CSV clients
+- **Search by**: Client ID, first name, last name, or phone number
+- **Real-time filtering** as you type
+- **Click to navigate** to full client detail page
+- **Client count** display showing filtered results
+- **Empty state** messaging when no results found
+
+**4. Clients List Tab**
+- **Complete table view** of all CSV upload data
+- **Sortable columns** for easy data organization
+- **Filtering capabilities** by various criteria
+- **Client information** display (ID, name, phone, appointment details)
+- **Quick navigation** to client detail pages
+
+**5. Help Requests Tab**
+- **Live table** of all client assistance requests
+- **Request details**: Client phone, name, message, current page, timestamp
+- **Status management**: Pending, In Progress, Resolved
+- **Filter by status** dropdown
+- **Search functionality** to find specific requests
+- **View details modal** showing full request information
+- **Status update** buttons for managing requests
+- **Response tracking** with admin notes
+- **Real-time updates** with polling
+
+#### **CSV Upload Page**
+- **Drag-and-drop file upload** interface
+- **File validation**: Checks for .csv extension and file size (10MB limit)
+- **Upload progress bar** with percentage display
+- **Upload statistics**:
+  - Total records processed
+  - New records added
+  - Duplicate records skipped
+  - Date mismatch warnings
+- **Date mismatch detection**: Warns if CSV dates don't match today
+- **Intelligent column detection**: Automatically detects CSV column structure
+- **Supports multiple CSV formats** and column variations
+- **Duplicate detection**: Prevents duplicate client records
+- **Clear all data** functionality with confirmation dialog
+- **Today's data status** indicator showing if data exists
+- **Data expiry time** display (24-hour auto-purge countdown)
+- **Upload history** and status tracking
+
+#### **All Check-Ins Page**
+- **Complete list** of all check-in records
+- **Advanced search** functionality:
+  - Search by client name (first or last)
+  - Search by client ID
+  - Search by phone number
+  - Search by date range
+- **Status filtering**:
+  - All statuses
+  - Pending
+  - Collected
+  - Not Collected
+  - Rescheduled
+  - Cancelled
+- **Status management**:
+  - Update check-in status
+  - Mark as collected
+  - Mark as not collected
+  - Cancel appointments
+- **Print ticket** functionality directly from list (one-click printing)
+- **View details modal** showing complete check-in information
+- **Client information display**:
+  - Name, phone, email
+  - Appointment date and time
+  - Check-in timestamp
+  - Completion time
+  - Status with color coding
+- **Late appointment detection**: Shows "Late by X hours" for overdue appointments
+- **Missed appointment detection**: Identifies appointments missed by 4+ hours
+- **Real-time updates** with automatic refresh (30-second polling)
+- **Export CSV functionality**: Export all check-ins with updates
+- **Export includes**:
+  - All original CSV data
+  - Updated status from check-ins
+  - Next appointment dates
+  - Special requests from client check-in
+  - Original data preserved unless updated
+- **Responsive table design** for mobile and desktop
+- **Pagination** for large datasets
+
+#### **Client Detail Page**
+- **Full client profile view** with comprehensive information:
+  - Personal details (name, phone, email)
+  - Household information (size, adults, seniors, children, children's ages)
+  - Appointment details (current and next appointment)
+  - Special requests (dietary restrictions, allergies, mobility issues)
+  - Program information (Link2Feed program field)
+  - Location and client type
+- **Edit all client fields**:
+  - Personal information (name, phone, email)
+  - Household size and composition
+  - Appointment details
+  - Special requests and dietary information
+  - Notes and additional information
+- **Print ticket** button for specific client
+- **Appointment rebooking** functionality:
+  - Change next appointment date
+  - Change appointment time
+  - Validates future dates
+- **Check-in history** display:
+  - Full history of all check-ins
+  - Timestamps for each check-in
+  - Status history
+  - Completion times
+- **Special requests display**:
+  - Dietary restrictions list
+  - Allergies information
+  - Mobility issues indicator
+  - Diaper size (if applicable)
 - Additional notes
-- **Assistance Button**: Available on every page
+- **Real-time data sync** with backend
+- **Save changes** with confirmation
+- **Navigation breadcrumbs** for easy return to dashboard
 
-**Page 4: Appointment Details**
-- Review current appointment date and time
-- See formatted date (e.g., "Monday, October 27th at 9:00 AM")
-- View appointment information
-- Continue to confirmation
+#### **Settings Page**
+- **Link2Feed API configuration**:
+  - API endpoint configuration
+  - API key management
+  - Connection testing
+  - Integration status display
+- **System status monitoring**:
+  - Backend connection status
+  - Database status
+  - API health checks
+- **Data management**:
+  - Clear all data button with confirmation
+  - Data version tracking
+  - System information display
+- **Configuration management**:
+  - Save and clear configuration
+  - Reset to defaults
+- **System information**:
+  - Version information
+  - Last update time
+  - System health indicators
 
-**Page 5: Confirmation**
-- See next appointment (21 days out, formatted nicely)
-- Success confirmation with auto-redirect after 10 seconds
-- Completion status
+#### **Profile Page**
+- **Admin user information** display
+- **Account details**:
+  - Email address
+  - User role
+  - Account creation date
+- **Session management**:
+  - Sign out functionality
+  - Session information
 
-### For Staff - Complete Admin Dashboard Features
+#### **Admin Dashboard Additional Features:**
 
-**Dashboard Page** - Main hub with 5 tabs:
-1. **Analytics** - Real-time charts showing: Collected (green), Pending (blue), Not Collected (orange), completion rates, and operational metrics
-2. **Recent Check-Ins** - Live feed with completion time, status badges, filter by status, real-time updates
-3. **Find Clients** - Search all CSV clients by name, phone, ID with instant results
-4. **Clients List** - View all CSV upload data in table format with sorting and filtering
-5. **Help Requests** - Live table of client assistance requests with status management and response tracking
+**Real-Time Updates & Synchronization:**
+- **Smart polling system**: Automatic data refresh every 30-120 seconds
+- **Page Visibility API**: Pauses polling when browser tab is hidden
+- **Exponential backoff**: Stops polling after 3 consecutive connection errors
+- **Real-time synchronization** across all admin pages
+- **Connection error handling**: Graceful degradation when backend unavailable
 
-**All Check-Ins Page**:
-- Complete list of all check-in records
-- Advanced search functionality (name, phone, ID, date range)
-- Filter by status (Pending, Collected, Not Collected, etc.)
-- **Print tickets** directly from the list
-- View detailed check-in info
-- Real-time updates with automatic refresh
-- Export capabilities
+**Print Ticket System:**
+- **One-click printing** from multiple locations:
+  - Check-Ins page (bulk printing)
+  - Client Detail page (individual printing)
+  - Dashboard quick actions
+- **Ticket includes**:
+  - Client name and ID
+  - Appointment date and time
+  - Next appointment information
+  - Special requests summary
+  - Ticket number
+  - QR code for future check-ins
+- **Print preview** before printing
+- **Print optimization** for standard paper sizes
 
-**Client Detail Page**:
-- Full client profile view with all appointment details
-- Edit all client fields (name, phone, appointment time, household size)
-- Print ticket for specific client
-- View full check-in history with timestamps
-- Special requests display and management
-- Appointment rebooking functionality
+**Appointment Management:**
+- **Appointment rebooking modal**:
+  - Date picker for new appointment
+  - Time slot selection (9:00 AM - 2:45 PM)
+  - Validates future dates only
+  - Updates all related records
+- **Status management**:
+  - Update check-in status
+  - Mark appointments as collected
+  - Mark as not collected
+  - Reschedule appointments
+  - Cancel appointments
+- **Appointment history** tracking
 
-**CSV Upload Page**:
-- Upload CSV from Link2Feed CSV export (CSV-first architecture)
-- Automatic CSV parsing with intelligent column detection
-- View upload statistics (added vs duplicates)
-- Date mismatch warnings
-- Clear all data with confirmation
-- Supports multiple CSV formats and column variations
+**Client Management:**
+- **Client edit modal**:
+- Edit all client fields
+  - Update household information
+  - Modify special requests
+  - Change appointment details
+- **Client search** across all pages
+- **Client lookup** with instant results
+- **Client detail navigation** from multiple entry points
 
-**Settings Page**:
-- Link2Feed API configuration (for future API integration)
-- System status and health monitoring
-- Clear configuration button
-- Integration management
-- Data version tracking
+**Data Export & Reporting:**
+- **Export all CSV** functionality:
+  - Exports every person from original CSV upload
+  - Includes updated status from check-ins
+  - Includes next appointment dates
+  - Includes special requests
+  - Preserves original data structure
+- **Export format**: CSV compatible with Link2Feed
+- **Date formatting** for export compatibility
 
-**Profile Page**:
-- Admin user information
-- Account details
+**Help Request Management:**
+- **Help request table** with filtering and search
+- **Status management**: Pending, In Progress, Resolved
+- **Request details modal**:
+  - Full request message
+  - Client information
+  - Current page where request was made
+  - Timestamp
+- **Response tracking** with admin notes
+- **Real-time updates** as new requests come in
+
+**Analytics & Reporting:**
+- **Real-time analytics charts**:
+  - Bar charts by status
+  - Hourly breakdown
+  - Peak hour identification
+- **Dashboard statistics**:
+  - Total check-ins
+  - Completion rates
+  - Average wait times
+  - No-show rates
+- **Visual data representation** with color coding
+
+**Authentication & Security:**
+- **Supabase authentication** with PKCE flow
+- **Protected routes** - admin-only access
+- **Session management** with auto-refresh tokens
+- **Secure API calls** with authentication headers
+- **Password reset** functionality
+- **Login page** with error handling
+
+**System Features:**
+- **CSV-first architecture**: Works immediately with CSV uploads
+- **Link2Feed-ready**: Architecture designed for future API integration
+- **Multi-location support**: Scalable for multiple food bank locations
+- **24-hour auto-purge**: Data automatically deleted after 24 hours for privacy
+- **Error handling**: Comprehensive error handling throughout
+- **Loading states**: Skeleton loaders and spinners for better UX
+- **Toast notifications**: User feedback for all actions
+- **Responsive design**: Works on desktop, tablet, and mobile
+- **Accessibility**: WCAG-compliant design
 
 ---
 
