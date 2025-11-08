@@ -931,11 +931,7 @@ This system was originally designed as a capstone project at Thompson Rivers Uni
 
 ---
 
-## 🎯 Relevant Experience for Software & Support Services Engineering
-
-This project demonstrates **relevant qualifications** for a Software and Support Services Engineering role:
-
-### ✨ Why This Project Stands Out
+## ✨ Why This Project Stands Out
 - **Solo Development**: Designed and built entirely by me from the ground up as a capstone project
 - **Agile Methodology**: Used agile development practices throughout the project lifecycle
 - **Real Production System**: Deployed and serving real users daily
