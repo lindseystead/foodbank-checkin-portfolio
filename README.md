@@ -37,6 +37,8 @@ Each frontend component has its own README with detailed setup instructions. See
 
 **📄 Sample CSV File:** See [`docs/sample-appointments.csv`](docs/sample-appointments.csv) for an example CSV file format compatible with Link2Feed exports. All data is sanitized/anonymized for demonstration purposes.
 
+**⚠️ Note:** The sample CSV contains hardcoded dates (`2025-04-14`). To test the system, you must update all `Pick Up Date` values to match **today's date** before uploading. The system only allows check-ins for appointments scheduled for today.
+
 ---
 
 ## 🎮 Try It Out
@@ -48,6 +50,15 @@ Each frontend component has its own README with detailed setup instructions. See
     - Email: `admin@example.com`
     - Password: `testing123`
   - Note: This is a test account for portfolio review and demonstration purposes
+
+**⚠️ Important: Testing the System**
+To test the complete check-in flow, you'll need to:
+1. **Download the sample CSV file**: [`docs/sample-appointments.csv`](docs/sample-appointments.csv)
+2. **Update the dates**: Change all `Pick Up Date` values to match **today's date** (format: `YYYY-MM-DD @ HH:MM AM/PM`)
+   - Example: If today is November 7, 2025, change `2025-04-14 @ 9:00 AM` to `2025-11-07 @ 9:00 AM`
+   - The system validates check-ins based on today's date, so appointments must be for today
+3. **Upload to Admin Dashboard**: Log in to the admin dashboard and upload the updated CSV file
+4. **Test Client Check-In**: Use the phone numbers and last names from the CSV to test the client check-in flow
 
 **Code Review:**
 - Frontend code is available in this repository
@@ -427,7 +438,7 @@ Very little staff and volunteer training required. Simple interface that anyone 
 
 ### Project Origin
 
-This system was **independently developed** by Lindsey D. Stead as a **Bachelor of Computing Science capstone project** at **Thompson Rivers University (TRU)**. The project was created to solve real operational challenges faced by a local food bank, transforming their paper-based check-in process into a modern, efficient digital system.
+This system was **independently developed** by Lindsey D. Stead as a **Bachelor of Computing Science capstone project** at **Thompson Rivers University (TRU)**. The project was created to solve real operational challenges faced by a local food bank, transforming their paper-based check-in process into a modern, efficient digital system. Thank you to my Supervisor and mentor Dr. Kevin O'Neil.
 
 ### Development Journey
 
