@@ -380,42 +380,11 @@ const Link2FeedStatus: React.FC = () => {
 
             <VStack align="start" spacing={2}>
               <Heading size="sm" color="gray.700">
-                Resources:
+                Note:
               </Heading>
-              <Button
-                as="a"
-                href="https://www.link2feed.com/support"
-                target="_blank"
-                rel="noopener noreferrer"
-                variant="link"
-                colorScheme="blue"
-                rightIcon={<FiExternalLink />}
-                size="sm"
-              >
-                Link2Feed Support Center
-              </Button>
-              <Button
-                as="a"
-                href="https://www.link2feed.com/contact"
-                target="_blank"
-                rel="noopener noreferrer"
-                variant="link"
-                colorScheme="blue"
-                rightIcon={<FiExternalLink />}
-                size="sm"
-              >
-                Contact Link2Feed Support
-              </Button>
-              <Button
-                as="a"
-                href="mailto:support@link2feed.com"
-                variant="link"
-                colorScheme="blue"
-                rightIcon={<FiExternalLink />}
-                size="sm"
-              >
-                Email Support
-              </Button>
+              <Text fontSize="sm" color="gray.600">
+                Link2Feed integration is optional. The system works with CSV exports from Link2Feed or any compatible appointment management system.
+              </Text>
             </VStack>
           </VStack>
         </CardBody>

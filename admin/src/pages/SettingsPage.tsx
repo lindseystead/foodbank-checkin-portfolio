@@ -294,35 +294,11 @@ const SettingsPage: React.FC = () => {
 
                       <Box p={3} bg="blue.50" borderRadius="md" border="1px solid" borderColor="blue.200" textAlign="center">
                         <Text fontSize="sm" color="blue.700" fontWeight="medium" mb={1}>
-                          Link2Feed Support
+                          Link2Feed Integration
                         </Text>
-                        <Text fontSize="xs" color="blue.600" mb={2}>
-                          Get help with Link2Feed integration and API configuration.
+                        <Text fontSize="xs" color="blue.600">
+                          Link2Feed integration is optional. The system works with CSV exports from Link2Feed or any compatible appointment management system.
                         </Text>
-                        <HStack spacing={2} justify="center">
-                          <Button
-                            as="a"
-                            href="https://www.link2feed.com"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            size="xs"
-                            colorScheme="blue"
-                            variant="outline"
-                            rightIcon={<FiExternalLink />}
-                          >
-                            Support Center
-                          </Button>
-                          <Button
-                            as="a"
-                            href="mailto:support@link2feed.com"
-                            size="xs"
-                            colorScheme="blue"
-                            variant="outline"
-                            rightIcon={<FiExternalLink />}
-                          >
-                            Email Support
-                          </Button>
-                        </HStack>
                       </Box>
 
                       <Box p={3} bg="green.50" borderRadius="md" border="1px solid" borderColor="green.200" textAlign="center">
