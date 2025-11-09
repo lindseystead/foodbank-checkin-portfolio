@@ -6,6 +6,8 @@
 
 🌐 **Live Demo:** [Client Check-In](https://foodbank-checkin-tan.vercel.app/) | [Admin Dashboard](https://foodbank-checkin.vercel.app/login)
 
+> **📝 Portfolio Project**: This repository contains the **frontend applications only** (Client App + Admin Dashboard) from my capstone project. **The backend API is proprietary and NOT included in this repository.** This is a portfolio demonstration - the backend code is not publicly available.
+
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-20232A?logo=react&logoColor=61DAFB)](https://reactjs.org/)
 [![Vercel](https://img.shields.io/badge/Vercel-Hosted-000000?logo=vercel&logoColor=white)](https://vercel.com)
@@ -60,6 +62,7 @@ Client App (React/TypeScript) ↔ RESTful API (Node.js/Express) ↔ Admin Dashbo
 - RESTful API (31 endpoints across 10 route modules)
 - Supabase, PostgreSQL
 - In-memory data store with 24-hour auto-purge
+- **Note:** Backend API is proprietary and not included in this repository (see top note)
 
 **DevOps & Deployment:**
 - Vercel (frontend hosting)
@@ -103,13 +106,6 @@ Client App (React/TypeScript) ↔ RESTful API (Node.js/Express) ↔ Admin Dashbo
 **Timeline:** 6 months solo development  
 **Status:** Production-ready, deployed demo
 
-**What This Demonstrates:**
-- Full software engineering lifecycle (requirements → design → implementation → deployment)
-- Agile methodology implementation
-- Solo full-stack development capabilities
-- Production deployment and DevOps skills
-- Real-world problem-solving
-
 ---
 
 ## 🌟 What Makes This Special
@@ -143,26 +139,98 @@ Client App (React/TypeScript) ↔ RESTful API (Node.js/Express) ↔ Admin Dashbo
 ## 📸 Screenshots
 
 ### Client Application
-- **Welcome & Language Selection** - 7-language support with visual language picker
-  - English, Français, Español, 中文, हिन्दी, العربية, ਪੰਜਾਬੀ
-  - Language preference persists throughout entire session
-  - Full UI translation with 1,668 lines of translations
-- **Check-In Process** - 5-step workflow (Landing → Initial Check-In → Special Requests → Appointment Details → Confirmation)
-- **Mobile Responsive** - Works seamlessly on phones, tablets, and kiosks
+
+#### Welcome & Language Selection
+![Client Welcome Landing](assets/client-welcome-landing.png)
+*Welcome page with language selection - clients can choose from 7 languages*
+
+![Client Language Selection](assets/client-language-selection.png)
+*Language selection interface supporting English, French, Spanish, Chinese, Hindi, Arabic, and Punjabi*
+
+#### Check-In Process
+![Client Check-In Form](assets/client-check-in-form.png)
+*Initial check-in form - clients enter phone number and last name to verify their appointment*
+
+![Client Special Requests](assets/client-special-requests.png)
+*Special dietary requests page - clients can specify dietary preferences, allergies, and accommodation needs*
+
+![Client Appointment Details](assets/client-appointment-details.png)
+*Appointment details page - clients review their scheduled appointment information*
+
+![Client Confirmation](assets/client-confirmation.png)
+*Confirmation page - clients receive confirmation with their next appointment details*
+
+#### Mobile Responsive Design
+![Client Mobile Responsive](assets/client-mobile-responsive.png)
+*Mobile-responsive design - the client application works seamlessly on phones, tablets, and kiosks*
 
 ### Admin Dashboard
-- **Real-Time Analytics** - Bar charts, hourly breakdown, peak hour identification
-- **Check-In Management** - Search, filter, status management, print tickets
-- **CSV Upload** - Drag-and-drop with intelligent column detection
-- **Client Management** - Full CRUD operations, appointment rebooking
+
+#### Authentication & Configuration
+![Admin Login](assets/admin-login.png)
+*Admin login page - secure authentication using Supabase with PKCE flow*
+
+![Admin Link2Feed Config](assets/admin-link2feed-config.png)
+*Link2Feed API configuration - admin can configure Link2Feed integration settings*
+
+#### Dashboard & Analytics
+![Admin Recent Check-Ins](assets/admin-recent-check-ins.png)
+*Recent check-ins feed - live feed of check-in activity with status badges and completion times*
+
+#### Check-In Management
+![Admin Check-Ins Page](assets/admin-check-ins-page.png)
+*All check-ins page - comprehensive view of all check-ins with search, filter, and status management*
+
+![Admin Client Detail](assets/admin-client-detail.png)
+*Client detail page - full client profile view with edit capabilities and check-in history*
+
+#### Data Management
+![Admin CSV Upload](assets/admin-csv-upload.png)
+*CSV upload page - upload daily appointment CSV files from Link2Feed with upload statistics*
+
+![Admin Settings](assets/admin-settings.png)
+*Settings page - system configuration, Link2Feed integration, and system status*
+
+---
+
+## 🎮 Try It Out
+
+**Live Demo Available:**
+- **Client Check-In**: [https://foodbank-checkin-tan.vercel.app/](https://foodbank-checkin-tan.vercel.app/)
+- **Admin Dashboard**: [https://foodbank-checkin.vercel.app/login](https://foodbank-checkin.vercel.app/login)
+  - **Test Admin Credentials for Supabase Authentication:**
+    - Email: `admin@example.com`
+    - Password: `testing123`
+  - Note: This is a test account for portfolio review and demonstration purposes
+
+**⚠️ Important: Testing the System**
+
+To test the complete check-in flow, you'll need:
+
+1. **Download the sample CSV file**: [`docs/sample-appointments.csv`](docs/sample-appointments.csv)
+2. **Update the dates**: Change all `Pick Up Date` values to match **today's date** (format: `YYYY-MM-DD @ HH:MM AM/PM`)
+   - Example: If today is November 7, 2025, change `2025-04-14 @ 9:00 AM` to `2025-11-07 @ 9:00 AM`
+   - The system validates check-ins based on today's date, so appointments must be for today to populate the check-ins for that day and it must be during the correct hours for the system validation work
+3. **Upload to Admin Dashboard**: 
+   - Log in to the admin dashboard using the test credentials above
+   - Navigate to the CSV Upload page
+   - Upload the updated CSV file
+4. **Test Client Check-In**: 
+   - Open the client check-in app: [https://foodbank-checkin-tan.vercel.app/](https://foodbank-checkin-tan.vercel.app/)
+   - Use the phone numbers and last names from the CSV to test the client check-in flow
+   - Complete the 5-step check-in process
+
+**📄 Sample CSV File:** See [`docs/sample-appointments.csv`](docs/sample-appointments.csv) for an example CSV file format compatible with Link2Feed exports. All data is sanitized/anonymized for demonstration purposes. **Note:** The sample CSV contains hardcoded dates (`2025-04-14`). To test the system, you must update all `Pick Up Date` values to match **today's date** before uploading.
 
 ---
 
 ## 🚀 Quick Start
 
+> **⚠️ Important**: This repository contains **frontend applications only** (Client App + Admin Dashboard). The backend API is **proprietary and not included** in this repository. The backend is deployed separately and not available for public access.
+
 **Prerequisites:**
 - Node.js 18+ and npm
-- Backend API running (not included in this repository)
+- Backend API running (proprietary - not included in this repository - see note above)
 
 **Installation:**
 ```bash
@@ -190,23 +258,6 @@ cd admin && npm run dev
 ```bash
 cd client && npm run build
 cd admin && npm run build
-```
-
----
-
-## 🧪 Testing
-
-**Test Infrastructure:**
-- Vitest-ready: Frontend unit testing setup
-- Cypress-ready: End-to-end testing setup
-
-**Running Tests:**
-```bash
-# Admin frontend unit tests
-cd admin && npm test
-
-# Client frontend unit tests
-cd client && npm test
 ```
 
 ---
@@ -299,13 +350,26 @@ I'm a full-stack developer who builds production-ready systems that solve real p
 
 ---
 
-## 📄 License
+## 📄 License & Intellectual Property
+
+**Intellectual Property:** This project was designed, created, and implemented by Lindsey D. Stead and is the intellectual property of Lindsey D. Stead.
+
+**Copyright © 2025 Lindsey D. Stead. All Rights Reserved.**
 
 **Portfolio Project** - This repository is for portfolio demonstration purposes only.
 
-This is proprietary software - no license is granted for use, copying, modification, distribution, or commercial exploitation.
+**For Recruiters & Hiring Managers:**
+- ✅ **Portfolio Review:** Feel free to review this code for evaluation purposes
+- ✅ **Code Inspection:** You may inspect the codebase to assess technical skills
+- ✅ **Interview Discussion:** This project can be discussed in interviews
 
-For licensing inquiries: info@lifesavertech.ca
+**For Commercial Use:**
+- This software is proprietary and available for licensing upon request
+- Commercial use, deployment, or distribution requires a license
+- Licensing inquiries: Lifesaver Technology Services (info@lifesavertech.ca)
+
+
+**Note:** This demonstrates both technical skills and business acumen - the ability to build production-ready software and understand intellectual property rights.
 
 ---
 
