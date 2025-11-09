@@ -6,6 +6,15 @@
 
 🌐 **Live Demo:** [Client Check-In](https://foodbank-checkin-tan.vercel.app/) | [Admin Dashboard](https://foodbank-checkin.vercel.app/login)
 
+[![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![React](https://img.shields.io/badge/React-20232A?logo=react&logoColor=61DAFB)](https://reactjs.org/)
+[![Vercel](https://img.shields.io/badge/Vercel-Hosted-000000?logo=vercel&logoColor=white)](https://vercel.com)
+[![License](https://img.shields.io/badge/License-Proprietary-red)](LICENSE)
+[![Code Quality](https://img.shields.io/badge/Code-Quality-blue)](README.md#-technical-excellence)
+[![Tests](https://img.shields.io/badge/Tests-Vitest%20%7C%20Cypress-green)](README.md#-testing)
+
+![visitor badge](https://visitor-badge.laobi.icu/badge?page_id=lindseystead.foodbank-checkin-portfolio)
+
 ---
 
 ## 🎯 Key Highlights
@@ -62,7 +71,8 @@ Client App (React/TypeScript) ↔ RESTful API (Node.js/Express) ↔ Admin Dashbo
 - QR code workflow (no dedicated hardware required)
 - Real-time analytics dashboard
 - CSV-first data processing
-- Multi-language support (7 languages)
+- **Multi-language support** - 7 languages (English, French, Spanish, Chinese, Hindi, Arabic, Punjabi) with 1,668 lines of translations
+- **i18next internationalization** - Persistent language selection, full UI translation
 - WCAG 2.1 AA accessible design
 - PIPEDA-compliant privacy
 
@@ -133,7 +143,10 @@ Client App (React/TypeScript) ↔ RESTful API (Node.js/Express) ↔ Admin Dashbo
 ## 📸 Screenshots
 
 ### Client Application
-- **Welcome & Language Selection** - 7-language support
+- **Welcome & Language Selection** - 7-language support with visual language picker
+  - English, Français, Español, 中文, हिन्दी, العربية, ਪੰਜਾਬੀ
+  - Language preference persists throughout entire session
+  - Full UI translation with 1,668 lines of translations
 - **Check-In Process** - 5-step workflow (Landing → Initial Check-In → Special Requests → Appointment Details → Confirmation)
 - **Mobile Responsive** - Works seamlessly on phones, tablets, and kiosks
 
@@ -272,7 +285,6 @@ foodbank-checkin/
 - ⚡ **67% reduction** in check-in time achieved
 
 ---
-
 
 ## 👤 Developer
 
