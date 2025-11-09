@@ -273,14 +273,6 @@ foodbank-checkin/
 
 ---
 
-## 📚 Full Documentation
-
-For detailed architecture, features, and technical documentation, see:
-- [ARCHITECTURE.md](ARCHITECTURE.md) - System architecture details
-- [FEATURES.md](FEATURES.md) - Complete feature list
-- [DEPLOYMENT.md](DEPLOYMENT.md) - Deployment guide
-
----
 
 ## 👤 Developer
 
