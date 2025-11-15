@@ -17,7 +17,7 @@
 [![Privacy](https://img.shields.io/badge/Privacy-PIPEDA%20Compliant-purple.svg)](#technical-implementation)
 [![Deployment](https://img.shields.io/badge/Deployment-Vercel%20%7C%20Railway-orange.svg)](https://vercel.com/)
 ![Visitor Count](https://visitor-badge.laobi.icu/badge?page_id=lindseystead.foodbank-checkin)
-![Last Commit](https://img.shields.io/github/last-commit/lindseystead/foodbank-checkin)
+![Last Commit](https://img.shields.io/github/last-commit/lindseystead/foodbank-checkin-portfolio)
 
 **Live Demo:** [Client Check-In](https://foodbank-checkin-tan.vercel.app/) | [Admin Dashboard](https://foodbank-checkin.vercel.app/login)
 
