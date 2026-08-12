@@ -1,0 +1,17 @@
+# Dependencies / builds (also ignored per-app)
+node_modules/
+dist/
+coverage/
+.vercel/
+
+# Env / secrets
+.env
+.env.*
+!.env.example
+
+# OS / editor
+.DS_Store
+*.log
+
+# Outreach / PII-adjacent lead lists (keep private)
+docs/leads/
