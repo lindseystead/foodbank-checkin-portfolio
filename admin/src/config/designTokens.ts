@@ -26,7 +26,7 @@ export const palette = {
   error: '#F56565',
   info: '#4299E1',
   text: '#1f2937',
-  muted: '#718096',
+  muted: '#4A5568',
   pageBg: '#f7f8fb',
   surface: '#ffffff',
 } as const;

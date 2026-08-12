@@ -405,15 +405,23 @@ const LoginPage: React.FC = () => {
                       >
                         <Checkbox 
                           colorScheme="blue" 
-                          size="md"
+                          size="lg"
                           isChecked={rememberMe}
                           onChange={(e) => setRememberMe(e.target.checked)}
+                          spacing={3}
+                          sx={{
+                            '.chakra-checkbox__control': {
+                              width: '22px',
+                              height: '22px',
+                              minWidth: '22px',
+                            },
+                          }}
                           _focus={{
                             boxShadow: '0 0 0 3px rgba(59, 130, 246, 0.5)',
                             outline: 'none',
                           }}
                         >
-                          <Text fontSize="sm" color="gray.600">
+                          <Text fontSize="md" color="gray.700">
                             Remember me
                           </Text>
                         </Checkbox>

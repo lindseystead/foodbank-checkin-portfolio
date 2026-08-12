@@ -217,11 +217,18 @@ const InitialCheckIn: React.FC = () => {
       // Backend returns 400 status for validation errors (too early/late)
       // So we need to check both response.ok AND result.success
       if (!response.ok || !result.success || !result.data) {
-        // Handle error response (400 status or success: false)
-        // This includes: appointment not found, too early, too late, etc.
-        let errorMessage = typeof result.error === 'string' 
-          ? result.error 
-          : result.error?.message || 'We could not find an appointment matching your information.';
+        // Prefer explicit message from API when present (consent, lateness, etc.)
+        let errorMessage =
+          (typeof result.message === 'string' && result.message) ||
+          (typeof result.error === 'string' ? result.error : '') ||
+          (typeof result.error === 'object' && result.error?.message) ||
+          'We could not find an appointment matching your information.';
+
+        if (result.consentRequired || errorMessage === 'consent_required') {
+          errorMessage =
+            (typeof result.message === 'string' && result.message) ||
+            'Please agree to the privacy notice before checking in.';
+        }
         
         // Remove phone numbers from error messages (generic error messages only)
         errorMessage = errorMessage.replace(/\(?\d{3}\)?\s*-?\s*\d{3}\s*-?\s*\d{4}/g, '');
@@ -236,11 +243,17 @@ const InitialCheckIn: React.FC = () => {
                                   errorMessage.includes('too late') ||
                                   errorMessage.includes('appointment is at') ||
                                   errorMessage.includes('Please check in no more than');
+        const isConsentError =
+          Boolean(result.consentRequired) || errorMessage.toLowerCase().includes('consent');
         
         toast({
-          title: isTimeWindowError ? 'Cannot Check In Yet' : 'Appointment Not Found',
-          description: `${errorMessage}${isTimeWindowError ? '' : ' Please verify your information and try again, or use the "Need Help?" button for assistance.'}`,
-          status: isTimeWindowError ? 'warning' : 'error',
+          title: isConsentError
+            ? 'Consent required'
+            : isTimeWindowError
+              ? 'Cannot Check In Yet'
+              : 'Appointment Not Found',
+          description: `${errorMessage}${isTimeWindowError || isConsentError ? '' : ' Please verify your information and try again, or use the "Need Help?" button for assistance.'}`,
+          status: isTimeWindowError || isConsentError ? 'warning' : 'error',
           duration: 10000,
           isClosable: true,
           position: 'bottom',
@@ -366,13 +379,25 @@ const InitialCheckIn: React.FC = () => {
               isChecked={consentGiven}
               onChange={(e) => setConsentGiven(e.target.checked)}
               alignItems="flex-start"
+              size="lg"
+              spacing={3}
+              sx={{
+                '.chakra-checkbox__control': {
+                  width: '24px',
+                  height: '24px',
+                  minWidth: '24px',
+                },
+                '.chakra-checkbox__label': {
+                  minHeight: '44px',
+                },
+              }}
             >
-              <Text fontSize="sm" color="gray.700">
+              <Text fontSize="md" color="gray.700" lineHeight="1.45" pt={0.5}>
                 {t(
                   'checkIn.consentLabel',
                   'I agree to the collection and use of my information for the purpose of receiving food support, as described in the',
                 )}{' '}
-                <Link href="https://cofb-checkin.ca/privacy" isExternal color="blue.600" textDecoration="underline">
+                <Link href="https://cofb-checkin.ca/privacy" isExternal color="blue.700" textDecoration="underline">
                   {t('checkIn.privacyNotice', 'Privacy Notice')}
                 </Link>
                 .

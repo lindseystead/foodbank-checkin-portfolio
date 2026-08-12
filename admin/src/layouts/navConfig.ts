@@ -23,12 +23,21 @@ export interface NavItem {
   description: string;
 }
 
+/**
+ * Volunteers nav is gated until volunteer schema is present in the active
+ * environment. Set VITE_ENABLE_VOLUNTEERS=true to show the roster/shifts UI.
+ */
+const volunteersEnabled =
+  String(import.meta.env.VITE_ENABLE_VOLUNTEERS || '').toLowerCase() === 'true';
+
 export const PRIMARY_NAV: NavItem[] = [
   { label: 'Dashboard',     path: '/dashboard',     icon: FiHome,       description: 'Daily operations overview' },
   { label: 'Check-ins',     path: '/check-ins',     icon: FiUserCheck,  description: "Today's appointments" },
   { label: 'Clients',       path: '/clients',       icon: FiUsers,      description: 'Lookup + manage clients' },
   { label: 'Help Requests', path: '/help-requests', icon: FiHelpCircle, description: 'Client assistance inbox' },
-  { label: 'Volunteers',    path: '/volunteers',    icon: FiHeart,      description: 'Roster + shift scheduling' },
+  ...(volunteersEnabled
+    ? [{ label: 'Volunteers', path: '/volunteers', icon: FiHeart, description: 'Roster + shift scheduling' } as NavItem]
+    : []),
   { label: 'Reports',       path: '/reports',       icon: FiBarChart2,  description: 'Utilization metrics + HungerCount export' },
   { label: 'CSV Upload',    path: '/csv-upload',    icon: FiUpload,     description: 'Import Link2Feed CSVs' },
 ];

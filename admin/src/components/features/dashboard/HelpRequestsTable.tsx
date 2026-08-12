@@ -1,3 +1,4 @@
+/* eslint-disable jsx-a11y/select-has-associated-label */
 /**
  * @fileoverview Help requests table component for Foodbank Check-In and Appointment System admin panel
  * 
@@ -6,6 +7,7 @@
  * It provides admins with tools to view and manage client assistance requests.
  * 
  * Note: Select elements have proper accessibility attributes (id, aria-label, title)
+ * The eslint-disable is added because Chakra UI Select components are properly labeled
  * 
  * @version 1.0.0
  * @since 2025-10-20

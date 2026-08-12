@@ -85,9 +85,7 @@ const AppointmentRebookModal: React.FC<AppointmentRebookModalProps> = ({
         });
         return;
       }
-    } catch {
-      // Invalid date string — still attempt rebook; server validates.
-    }
+    } catch {}
 
     setIsLoading(true);
     try {

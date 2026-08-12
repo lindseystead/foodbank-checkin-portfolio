@@ -186,7 +186,7 @@ const Confirmation: React.FC = () => {
         ...data,
         lastName: data.clientName?.split(' ').pop() || 'Guest',
       };
-    } catch (_error) {
+    } catch (error) {
       return { lastName: 'Guest' };
     }
   }, []);
@@ -195,7 +195,7 @@ const Confirmation: React.FC = () => {
   const specialRequestsData = React.useMemo(() => {
     try {
       return JSON.parse(sessionStorage.getItem('specialRequestsData') || '{}');
-    } catch (_error) {
+    } catch (error) {
       return {};
     }
   }, []);

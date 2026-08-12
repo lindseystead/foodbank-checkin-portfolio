@@ -15,6 +15,9 @@
 export interface CheckInResponse {
   success: boolean;
   message?: string;
+  consentRequired?: boolean;
+  privacyNoticeUrl?: string | null;
+  error?: string | { message?: string; code?: string };
   data?: {
     checkInId: string;
     clientId: string;
@@ -45,7 +48,6 @@ export interface CheckInResponse {
       dietary?: string;
     };
   };
-  error?: string | { message: string; code?: string };
 }
 
 export interface CheckInFormData {

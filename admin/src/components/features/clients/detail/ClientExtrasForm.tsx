@@ -191,6 +191,7 @@ const ClientExtrasForm: React.FC<ClientExtrasFormProps> = ({
 
       <FormControl>
         <FormLabel htmlFor="diaper-size-select">Diaper Size</FormLabel>
+        {/* eslint-disable-next-line jsx-a11y/select-has-associated-label */}
         <Select
           id="diaper-size-select"
           value={formData.diaperSize || ''}
@@ -212,6 +213,7 @@ const ClientExtrasForm: React.FC<ClientExtrasFormProps> = ({
 
       <FormControl>
         <FormLabel htmlFor="notification-preference-select">Notification Preference</FormLabel>
+        {/* eslint-disable-next-line jsx-a11y/select-has-associated-label */}
         <Select
           id="notification-preference-select"
           value={formData.notificationPreference || ''}
@@ -238,6 +240,7 @@ const ClientExtrasForm: React.FC<ClientExtrasFormProps> = ({
 
       <FormControl>
         <FormLabel htmlFor="client-type-select">Client Type</FormLabel>
+        {/* eslint-disable-next-line jsx-a11y/select-has-associated-label */}
         <Select
           id="client-type-select"
           value={formData.clientType || ''}
