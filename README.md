@@ -94,12 +94,11 @@ Data access      unifiedStore adapter  →  tenantStore  →  Supabase Postgres 
 
 - Controllers call a stable store API (`unifiedStore`). Persistence moved from in-memory maps to tenant-scoped Postgres without rewriting call sites.
 - Day-of appointment rows use ~24h `expires_at` and are purged on an interval.
-- **Link2Feed CSV (primary):** staff export → Admin CSV Upload → fuzzy headers, date-mismatch gate, dedupe.
-- **Link2Feed API (optional):** HMAC-SHA256 sync into the same record model. CSV-only mode is fully supported.
+- **Link2Feed CSV (primary)** and **optional HMAC API sync** both land in the same unified records — see [`docs/link2feed-integration.md`](docs/link2feed-integration.md).
 
 Hosting: Vercel (frontends), Google Cloud Run (API), Supabase (Auth + Postgres).
 
-More detail: [`docs/architecture.md`](docs/architecture.md) · [`docs/data-flow.md`](docs/data-flow.md) · [`docs/ops-notes.md`](docs/ops-notes.md) · [`docs/security-notes.md`](docs/security-notes.md)
+More detail: [`docs/architecture.md`](docs/architecture.md) · [`docs/link2feed-integration.md`](docs/link2feed-integration.md) · [`docs/data-flow.md`](docs/data-flow.md) · [`docs/ops-notes.md`](docs/ops-notes.md) · [`docs/security-notes.md`](docs/security-notes.md)
 
 ---
 

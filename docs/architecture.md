@@ -52,6 +52,8 @@ Data access      unifiedStore adapter → tenantStore → Supabase Postgres (+ R
 
 ### Link2Feed (private services + admin Settings UI)
 
+See [`link2feed-integration.md`](link2feed-integration.md) for the full note.
+
 - **Primary:** CSV export from Link2Feed → smart import (fuzzy headers, date-mismatch gate, dedupe)
 - **Optional:** HMAC-SHA256 API client → sync into the same unified record model
 - Settings UI documents CSV-only as a first-class mode
